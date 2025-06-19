@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Plus, Minus, Search, Heart, RotateCcw } from 'lucide-react';
+import { Plus, Minus, Play, Heart, RotateCcw } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
 import { findGames, POPULAR_ITEMS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
@@ -40,6 +40,22 @@ export default function GameFinder() {
     setInputs(prev => ({
       ...prev,
       duration: Math.max(5, Math.min(120, prev.duration + delta))
+    }));
+  };
+
+  const handlePlayersInputChange = (value: string) => {
+    const num = parseInt(value) || 1;
+    setInputs(prev => ({
+      ...prev,
+      players: Math.max(1, Math.min(20, num))
+    }));
+  };
+
+  const handleDurationInputChange = (value: string) => {
+    const num = parseInt(value) || 5;
+    setInputs(prev => ({
+      ...prev,
+      duration: Math.max(5, Math.min(120, num))
     }));
   };
 
@@ -287,19 +303,24 @@ export default function GameFinder() {
 
         {/* Players Input */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-gray-300 text-sm font-medium mb-2 block">
-            👥 Players
-          </label>
-          <div className="flex items-center space-x-3">
+          <div className="text-center mb-3">
+            <span className="text-2xl">👥</span>
+          </div>
+          <div className="flex items-center justify-center space-x-3">
             <button
               onClick={() => handlePlayerChange(-1)}
               className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
             >
               <Minus size={14} />
             </button>
-            <span className="text-xl font-semibold text-orange-400 min-w-[2rem] text-center">
-              {inputs.players}
-            </span>
+            <input
+              type="number"
+              value={inputs.players}
+              onChange={(e) => handlePlayersInputChange(e.target.value)}
+              min="1"
+              max="20"
+              className="w-16 text-xl font-semibold text-orange-400 bg-transparent text-center border-b border-gray-600 focus:border-orange-400 focus:outline-none"
+            />
             <button
               onClick={() => handlePlayerChange(1)}
               className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
@@ -311,19 +332,24 @@ export default function GameFinder() {
 
         {/* Duration Input */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <label className="text-gray-300 text-sm font-medium mb-2 block">
-            ⏱️ Max Time (min)
-          </label>
-          <div className="flex items-center space-x-3">
+          <div className="text-center mb-3">
+            <span className="text-2xl">🕐</span>
+          </div>
+          <div className="flex items-center justify-center space-x-3">
             <button
               onClick={() => handleDurationChange(-5)}
               className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
             >
               <Minus size={14} />
             </button>
-            <span className="text-xl font-semibold text-orange-400 min-w-[2.5rem] text-center">
-              {inputs.duration}
-            </span>
+            <input
+              type="number"
+              value={inputs.duration}
+              onChange={(e) => handleDurationInputChange(e.target.value)}
+              min="5"
+              max="120"
+              className="w-16 text-xl font-semibold text-orange-400 bg-transparent text-center border-b border-gray-600 focus:border-orange-400 focus:outline-none"
+            />
             <button
               onClick={() => handleDurationChange(5)}
               className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
@@ -335,8 +361,9 @@ export default function GameFinder() {
 
         {/* Items Input */}
         <div className="bg-gray-800 rounded-lg p-4 relative">
-          <label className="text-gray-300 text-sm font-medium mb-2 block">
-            🎯 Available Items
+          <label className="text-gray-300 text-sm font-medium mb-2 block flex items-center justify-center">
+            <span className="text-xl mr-2">📋</span>
+            Available Items
           </label>
           <input
             type="text"
@@ -354,25 +381,65 @@ export default function GameFinder() {
                 <button
                   key={item}
                   onClick={() => handleItemSuggestionClick(item)}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors text-sm text-gray-200"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors text-sm text-gray-200 flex items-center space-x-2"
                 >
-                  {item}
+                  <span className="text-lg">{getItemEmoji(item)}</span>
+                  <span>{item}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {/* Search Button */}
+        {/* Play Button */}
         <button
           onClick={handleStartSwiping}
           disabled={gameMatches.length === 0}
           className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
         >
-          <Search size={18} />
-          <span>Find Games ({gameMatches.length})</span>
+          <Play size={18} />
         </button>
       </div>
     </div>
   );
+}
+
+function getItemEmoji(item: string): string {
+  const emojiMap: { [key: string]: string } = {
+    'cards': '🃏',
+    'paper': '📄',
+    'pen': '✏️',
+    'dice': '🎲',
+    'coins': '🪙',
+    'phone': '📱',
+    'music': '🎵',
+    'blindfold': '👁️',
+    'timer': '⏰',
+    'bottle': '🍼',
+    'chairs': '🪑',
+    'ball': '⚽',
+    'rope': '🪢',
+    'tape': '📼',
+    'markers': '🖊️',
+    'cups': '🥤',
+    'balloons': '🎈',
+    'string': '🧵',
+    'scissors': '✂️',
+    'spoons': '🥄',
+    'beans': '🫘',
+    'cotton balls': '☁️',
+    'ice cubes': '🧊',
+    'candy': '🍬',
+    'chocolate': '🍫',
+    'drinks': '🥤',
+    'snacks': '🍿',
+    'magazine': '📖',
+    'newspaper': '📰',
+    'plastic bags': '🛍️',
+    'rubber bands': '🔗',
+    'clothespins': '📎',
+    'nothing': '🚫'
+  };
+  
+  return emojiMap[item] || '🎯';
 }
