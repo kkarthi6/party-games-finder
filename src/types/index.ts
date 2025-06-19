@@ -14,6 +14,7 @@ export interface Game {
   instructions?: string;
   isNSFW?: boolean;
   isDrinking?: boolean;
+  vibe?: 'competitive' | 'relaxed' | 'energetic' | 'intimate' | 'silly' | 'strategic';
 }
 
 export interface GameFinderInputs {
@@ -22,6 +23,7 @@ export interface GameFinderInputs {
   items: string;
   nsfwMode: boolean;
   drinkingMode: boolean;
+  vibe: string;
 }
 
 export interface GameMatch {

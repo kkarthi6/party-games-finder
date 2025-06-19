@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Play, Heart, RotateCcw } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
-import { findGames, POPULAR_ITEMS } from '../utils/gameDatabase';
+import { findGames, POPULAR_ITEMS, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
 import GameDetail from './GameDetail';
 
@@ -11,7 +11,8 @@ export default function GameFinder() {
     duration: 30,
     items: '',
     nsfwMode: false,
-    drinkingMode: false
+    drinkingMode: false,
+    vibe: ''
   });
   
   const [showItemSuggestions, setShowItemSuggestions] = useState(false);
@@ -49,6 +50,10 @@ export default function GameFinder() {
 
   const handleItemsChange = (value: string) => {
     setInputs(prev => ({ ...prev, items: value }));
+  };
+
+  const handleVibeChange = (value: string) => {
+    setInputs(prev => ({ ...prev, vibe: value }));
   };
 
   const handleNSFWToggle = () => {
@@ -361,34 +366,55 @@ export default function GameFinder() {
           </div>
         </div>
 
-        {/* Items Input */}
-        <div className="bg-gray-800 rounded-lg p-4 relative">
-          <div className="flex items-center space-x-4">
-            <span className="text-3xl">📋</span>
-            <input
-              type="text"
-              value={inputs.items}
-              onChange={(e) => handleItemsChange(e.target.value)}
-              onFocus={() => setShowItemSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
-              placeholder="cards, paper, nothing..."
-              className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
-            />
-          </div>
-          
-          {showItemSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
-              {filteredSuggestions.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => handleItemSuggestionClick(item)}
-                  className="w-full text-center px-3 py-2 hover:bg-gray-600 transition-colors text-2xl"
-                >
-                  {getItemEmoji(item)}
-                </button>
-              ))}
+        {/* Items and Vibe Inputs - Side by Side */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Items Input */}
+          <div className="bg-gray-800 rounded-lg p-4 relative">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">📋</span>
+              <input
+                type="text"
+                value={inputs.items}
+                onChange={(e) => handleItemsChange(e.target.value)}
+                onFocus={() => setShowItemSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
+                placeholder="cards, paper..."
+                className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-2 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm"
+              />
             </div>
-          )}
+            
+            {showItemSuggestions && filteredSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
+                {filteredSuggestions.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => handleItemSuggestionClick(item)}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors text-sm text-gray-200"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Vibe Dropdown */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">✨</span>
+              <select
+                value={inputs.vibe}
+                onChange={(e) => handleVibeChange(e.target.value)}
+                className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-2 py-2 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm"
+              >
+                {VIBE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </div>
 
         {/* Play Button */}
@@ -404,44 +430,4 @@ export default function GameFinder() {
       </div>
     </div>
   );
-}
-
-function getItemEmoji(item: string): string {
-  const emojiMap: { [key: string]: string } = {
-    'cards': '🃏',
-    'paper': '📄',
-    'pen': '✏️',
-    'dice': '🎲',
-    'coins': '🪙',
-    'phone': '📱',
-    'music': '🎵',
-    'blindfold': '👁️',
-    'timer': '⏰',
-    'bottle': '🍼',
-    'chairs': '🪑',
-    'ball': '⚽',
-    'rope': '🪢',
-    'tape': '📼',
-    'markers': '🖊️',
-    'cups': '🥤',
-    'balloons': '🎈',
-    'string': '🧵',
-    'scissors': '✂️',
-    'spoons': '🥄',
-    'beans': '🫘',
-    'cotton balls': '☁️',
-    'ice cubes': '🧊',
-    'candy': '🍬',
-    'chocolate': '🍫',
-    'drinks': '🥤',
-    'snacks': '🍿',
-    'magazine': '📖',
-    'newspaper': '📰',
-    'plastic bags': '🛍️',
-    'rubber bands': '🔗',
-    'clothespins': '📎',
-    'nothing': '🚫'
-  };
-  
-  return emojiMap[item] || '🎯';
 }
