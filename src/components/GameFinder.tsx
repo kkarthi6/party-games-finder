@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Play, Heart, RotateCcw, Settings, X } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
-import { findGames, POPULAR_ITEMS, VIBE_OPTIONS } from '../utils/gameDatabase';
+import { findGames, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
 import GameDetail from './GameDetail';
 
@@ -9,7 +9,6 @@ export default function GameFinder() {
   const [inputs, setInputs] = useState<GameFinderInputs>({
     players: 4,
     duration: 30,
-    items: '',
     nsfwMode: false,
     drinkingMode: false,
     vibe: ''
@@ -19,7 +18,6 @@ export default function GameFinder() {
   const [playersDisplay, setPlayersDisplay] = useState('4');
   const [durationDisplay, setDurationDisplay] = useState('30');
   
-  const [showItemSuggestions, setShowItemSuggestions] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail'>('input');
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
@@ -95,10 +93,6 @@ export default function GameFinder() {
     }
   };
 
-  const handleItemsChange = (value: string) => {
-    setInputs(prev => ({ ...prev, items: value }));
-  };
-
   const handleVibeChange = (value: string) => {
     setInputs(prev => ({ ...prev, vibe: value }));
   };
@@ -109,15 +103,6 @@ export default function GameFinder() {
 
   const handleDrinkingToggle = () => {
     setInputs(prev => ({ ...prev, drinkingMode: !prev.drinkingMode }));
-  };
-
-  const handleItemSuggestionClick = (item: string) => {
-    const currentItems = inputs.items.split(',').map(i => i.trim()).filter(i => i);
-    if (!currentItems.includes(item)) {
-      const newItems = currentItems.length > 0 ? `${inputs.items}, ${item}` : item;
-      handleItemsChange(newItems);
-    }
-    setShowItemSuggestions(false);
   };
 
   const handleStartSwiping = () => {
@@ -213,11 +198,6 @@ export default function GameFinder() {
     setSwipeActions([]);
     setSelectedGame(null);
   };
-
-  const filteredSuggestions = POPULAR_ITEMS.filter(item =>
-    item.toLowerCase().includes(inputs.items.toLowerCase()) &&
-    !inputs.items.split(',').map(i => i.trim()).includes(item)
-  ).slice(0, 6);
 
   if (currentView === 'detail' && selectedGame) {
     return <GameDetail game={selectedGame} onBack={handleBackToResults} />;
@@ -444,39 +424,6 @@ export default function GameFinder() {
                 placeholder="5-120"
                 className="w-full text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3 shadow-inner"
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Items Input */}
-        <div className="bg-gray-800 rounded-lg p-4 shadow-md relative">
-          <div className="flex items-center space-x-3">
-            <span className="text-2xl">📋</span>
-            <div className="flex-1">
-              <label className="block text-xs text-gray-400 mb-1">Items Available</label>
-              <input
-                type="text"
-                value={inputs.items}
-                onChange={(e) => handleItemsChange(e.target.value)}
-                onFocus={() => setShowItemSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
-                placeholder="Cards, Ball, Paper..."
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
-              />
-              
-              {showItemSuggestions && filteredSuggestions.length > 0 && (
-                <div className="absolute top-full left-4 right-4 mt-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-50 max-h-32 overflow-y-auto">
-                  {filteredSuggestions.map((item) => (
-                    <button
-                      key={item}
-                      onClick={() => handleItemSuggestionClick(item)}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors text-sm text-gray-200"
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>

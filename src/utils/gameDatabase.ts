@@ -1,13 +1,5 @@
 import { Game, GameFinderInputs, GameMatch } from '../types';
 
-export const POPULAR_ITEMS = [
-  'Cards', 'Paper', 'Pen', 'Dice', 'Coins', 'Phone', 'Music', 'Blindfold',
-  'Timer', 'Bottle', 'Chairs', 'Ball', 'Rope', 'Tape', 'Markers', 'Cups',
-  'Balloons', 'String', 'Scissors', 'Spoons', 'Beans', 'Cotton Balls',
-  'Ice Cubes', 'Candy', 'Chocolate', 'Drinks', 'Snacks', 'Magazine',
-  'Newspaper', 'Plastic Bags', 'Rubber Bands', 'Clothespins', 'Nothing'
-];
-
 export const VIBE_OPTIONS = [
   { value: '', label: 'Any Vibe' },
   { value: 'competitive', label: 'Competitive' },
@@ -479,8 +471,7 @@ export const GAMES: Game[] = [
 ];
 
 export function findGames(inputs: GameFinderInputs): GameMatch[] {
-  const { players, duration, items, nsfwMode, drinkingMode, vibe } = inputs;
-  const itemList = items.toLowerCase().split(',').map(item => item.trim()).filter(item => item);
+  const { players, duration, nsfwMode, drinkingMode, vibe } = inputs;
   
   const matches: GameMatch[] = [];
   
@@ -529,61 +520,10 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
       reasons.push('Tight on time');
     }
     
-    // Items matching (25 points max)
-    if (items.trim() === '' || items.toLowerCase().includes('nothing')) {
-      if (game.items.includes('nothing')) {
-        score += 25;
-        reasons.push('No items needed');
-      } else if (game.items.length <= 2) {
-        score += 15;
-        reasons.push('Few items needed');
-      } else {
-        score += 5;
-        reasons.push('Some items required');
-      }
-    } else {
-      const gameItemsLower = game.items.map(item => item.toLowerCase());
-      let itemMatchScore = 0;
-      let matchedItems = 0;
-      
-      for (const gameItem of gameItemsLower) {
-        if (gameItem === 'nothing') {
-          itemMatchScore += 5;
-          continue;
-        }
-        
-        const hasItem = itemList.some(userItem => {
-          const userItemLower = userItem.toLowerCase();
-          const gameItemLower = gameItem.toLowerCase();
-          return userItemLower.includes(gameItemLower) || 
-                 gameItemLower.includes(userItemLower) ||
-                 (userItemLower === 'cards' && gameItemLower === 'deck') ||
-                 (userItemLower === 'deck' && gameItemLower === 'cards');
-        });
-        
-        if (hasItem) {
-          matchedItems++;
-          itemMatchScore += 8;
-        } else {
-          itemMatchScore -= 3; // Penalty for missing items
-        }
-      }
-      
-      // Bonus for having all required items
-      if (matchedItems === game.items.filter(item => item !== 'nothing').length) {
-        itemMatchScore += 10;
-        reasons.push('All items available');
-      } else if (matchedItems > 0) {
-        reasons.push(`${matchedItems}/${game.items.length} items available`);
-      }
-      
-      score += Math.max(0, Math.min(25, itemMatchScore));
-    }
-    
-    // Vibe matching (20 points max)
+    // Vibe matching (30 points max)
     if (vibe && game.vibe) {
       if (game.vibe === vibe) {
-        score += 20;
+        score += 30;
         reasons.push('Perfect vibe match');
       } else {
         // Partial vibe compatibility
@@ -594,36 +534,36 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
         }
       }
     } else if (!vibe) {
-      score += 5; // Small bonus for no vibe preference
+      score += 10; // Bonus for no vibe preference
     }
     
-    // Difficulty bonus based on group size (5 points max)
+    // Difficulty bonus based on group size (10 points max)
     if (players <= 4 && game.difficulty === 'easy') {
-      score += 5;
+      score += 8;
       reasons.push('Good for small groups');
     } else if (players >= 8 && game.difficulty === 'easy') {
-      score += 3;
+      score += 6;
       reasons.push('Easy for large groups');
     } else if (players >= 6 && players <= 10 && game.difficulty === 'medium') {
-      score += 4;
+      score += 7;
       reasons.push('Good complexity for group size');
     }
     
-    // Category bonuses based on context (5 points max)
+    // Category bonuses based on context (10 points max)
     if (duration <= 15 && game.category === 'physical') {
-      score += 3;
+      score += 6;
       reasons.push('Quick physical activity');
     } else if (duration >= 45 && game.category === 'mental') {
-      score += 3;
+      score += 6;
       reasons.push('Good for longer sessions');
     } else if (players >= 10 && game.category === 'social') {
-      score += 4;
+      score += 8;
       reasons.push('Great for large social groups');
     }
     
     // Popular game bonus (small boost)
     if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever'].includes(game.id)) {
-      score += 2;
+      score += 5;
     }
     
     // Only include games with a reasonable score
@@ -638,32 +578,32 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
 function getVibeCompatibility(userVibe: string, gameVibe: string): number {
   const compatibility: Record<string, Record<string, number>> = {
     'competitive': {
-      'strategic': 8,
-      'energetic': 6,
-      'silly': 3
+      'strategic': 15,
+      'energetic': 12,
+      'silly': 6
     },
     'relaxed': {
-      'intimate': 8,
-      'social': 6,
-      'silly': 4
+      'intimate': 15,
+      'social': 12,
+      'silly': 8
     },
     'energetic': {
-      'competitive': 6,
-      'silly': 8,
-      'physical': 7
+      'competitive': 12,
+      'silly': 15,
+      'physical': 14
     },
     'intimate': {
-      'relaxed': 8,
-      'social': 5
+      'relaxed': 15,
+      'social': 10
     },
     'silly': {
-      'energetic': 8,
-      'relaxed': 4,
-      'competitive': 3
+      'energetic': 15,
+      'relaxed': 8,
+      'competitive': 6
     },
     'strategic': {
-      'competitive': 8,
-      'mental': 6
+      'competitive': 15,
+      'mental': 12
     }
   };
   

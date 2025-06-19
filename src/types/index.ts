@@ -20,7 +20,6 @@ export interface Game {
 export interface GameFinderInputs {
   players: number;
   duration: number;
-  items: string;
   nsfwMode: boolean;
   drinkingMode: boolean;
   vibe: string;
