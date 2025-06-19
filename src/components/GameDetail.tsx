@@ -30,11 +30,10 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4">
       <div className="max-w-md mx-auto">
-        {/* Header */}
         <div className="flex items-center mb-6">
           <button
             onClick={onBack}
-            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors mr-4 shadow-lg hover:shadow-xl"
+            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all duration-200 mr-4 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
             aria-label="Go back to results"
           >
             <ArrowLeft size={20} className="text-orange-400" />
@@ -42,9 +41,7 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
           <h1 className="text-xl font-bold text-orange-400">Game Details</h1>
         </div>
 
-        {/* Game Card */}
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6 shadow-xl">
-          {/* Game Header */}
           <div className="text-center mb-6">
             <div className="text-8xl mb-3" role="img" aria-label={game.name}>
               {game.emoji}
@@ -53,7 +50,6 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
             <p className="text-gray-400">{game.description}</p>
           </div>
 
-          {/* Game Stats Grid */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="bg-gray-700/50 rounded-lg p-3 text-center shadow-md">
               <div className="text-2xl mb-1" role="img" aria-label="Players">👥</div>
@@ -88,7 +84,6 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
             </div>
           </div>
 
-          {/* Items Needed */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-300 mb-2 flex items-center">
               <span className="mr-2" role="img" aria-label="Items needed">🎯</span>
@@ -106,7 +101,6 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
             </div>
           </div>
 
-          {/* Instructions */}
           {game.instructions && (
             <div>
               <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center">

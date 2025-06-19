@@ -14,23 +14,38 @@ export default function GameFinder() {
     vibe: ''
   });
   
-  // Separate display values for inputs to allow empty states
   const [playersDisplay, setPlayersDisplay] = useState('4');
   const [durationDisplay, setDurationDisplay] = useState('30');
-  
   const [showSettings, setShowSettings] = useState(false);
   const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail'>('input');
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
   const [swipeActions, setSwipeActions] = useState<SwipeAction[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   const cardRef = useRef<HTMLDivElement>(null);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
 
-  const gameMatches = useMemo(() => findGames(inputs), [inputs]);
-  const suggestions = useMemo(() => getSuggestions(inputs), [inputs]);
+  const gameMatches = useMemo(() => {
+    try {
+      return findGames(inputs);
+    } catch (error) {
+      console.error('Error finding games:', error);
+      return [];
+    }
+  }, [inputs]);
+
+  const suggestions = useMemo(() => {
+    try {
+      return getSuggestions(inputs);
+    } catch (error) {
+      console.error('Error getting suggestions:', error);
+      return [];
+    }
+  }, [inputs]);
+
   const likedGames = useMemo(() => {
     const likedIds = swipeActions.filter(action => action.action === 'like').map(action => action.gameId);
     return gameMatches.filter(match => likedIds.includes(match.game.id));
@@ -102,11 +117,19 @@ export default function GameFinder() {
     setInputs(prev => ({ ...prev, drinkingMode: !prev.drinkingMode }));
   }, []);
 
-  const handleStartSwiping = useCallback(() => {
-    setCurrentView('swipe');
-    setCurrentGameIndex(0);
-    setSwipeActions([]);
-  }, []);
+  const handleStartSwiping = useCallback(async () => {
+    if (gameMatches.length === 0) return;
+    
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setCurrentView('swipe');
+      setCurrentGameIndex(0);
+      setSwipeActions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [gameMatches.length]);
 
   const handleSwipe = useCallback((direction: 'left' | 'right') => {
     if (currentGameIndex >= gameMatches.length) return;
@@ -132,6 +155,7 @@ export default function GameFinder() {
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
   }, []);
@@ -214,7 +238,7 @@ export default function GameFinder() {
   if (currentView === 'results') {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-sm mx-auto">
           <div className="text-center mb-6">
             <div className="flex items-center justify-center space-x-4">
               <Heart className="text-red-500" size={20} />
@@ -228,21 +252,22 @@ export default function GameFinder() {
                 <button
                   key={match.game.id}
                   onClick={() => handleGameClick(match.game)}
-                  className="w-full bg-gray-800 hover:bg-gray-700 rounded-lg p-4 border border-gray-700 transition-colors text-left shadow-lg hover:shadow-xl"
+                  className="w-full bg-gray-800 hover:bg-gray-700 rounded-lg p-4 border border-gray-700 transition-all duration-200 text-left shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
+                  aria-label={`View details for ${match.game.name}`}
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="text-3xl" role="img" aria-label={match.game.name}>
+                    <span className="text-3xl flex-shrink-0" role="img" aria-label={match.game.name}>
                       {match.game.emoji}
                     </span>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white">{match.game.name}</h3>
-                      <p className="text-sm text-gray-400">{match.game.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-white truncate">{match.game.name}</h3>
+                      <p className="text-sm text-gray-400 line-clamp-2">{match.game.description}</p>
                       <div className="text-xs text-gray-500 mt-1">
                         👥 {match.game.players.min}-{match.game.players.max} • 
                         ⏱️ {match.game.duration}min
                       </div>
                     </div>
-                    <Heart className="text-red-500" size={16} fill="currentColor" />
+                    <Heart className="text-red-500 flex-shrink-0" size={16} fill="currentColor" />
                   </div>
                 </button>
               ))}
@@ -257,7 +282,8 @@ export default function GameFinder() {
 
           <button
             onClick={handleRestart}
-            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors shadow-lg hover:shadow-xl"
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
+            aria-label="Start over with new preferences"
           >
             <RotateCcw size={18} />
             <span>Start Over</span>
@@ -273,12 +299,11 @@ export default function GameFinder() {
 
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex flex-col">
-        {/* Header with Home Button and Progress */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <button
               onClick={handleGoHome}
-              className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors shadow-lg hover:shadow-xl"
+              className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
               aria-label="Go home"
             >
               <Home size={20} className="text-orange-400" />
@@ -291,7 +316,7 @@ export default function GameFinder() {
             </div>
             
             <div className="w-10 h-10 flex items-center justify-center">
-              <span className="text-sm text-orange-400">
+              <span className="text-sm text-orange-400 font-medium">
                 {Math.round(progress)}%
               </span>
             </div>
@@ -301,11 +326,15 @@ export default function GameFinder() {
             <div 
               className="bg-orange-600 h-2 rounded-full transition-all duration-300 shadow-sm"
               style={{ width: `${progress}%` }}
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label={`Progress: ${Math.round(progress)}% complete`}
             />
           </div>
         </div>
 
-        {/* Swipe Area */}
         <div className="flex-1 relative max-w-sm mx-auto w-full">
           {currentGame && (
             <div
@@ -329,7 +358,6 @@ export default function GameFinder() {
                 }}
               />
               
-              {/* Swipe Indicators */}
               {Math.abs(dragOffset.x) > 50 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className={`text-6xl ${dragOffset.x > 0 ? 'text-green-500' : 'text-red-500'}`}>
@@ -348,26 +376,25 @@ export default function GameFinder() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
-      <div className="w-full max-w-xs space-y-4">
-        {/* Settings Button - Top Center */}
+      <div className="w-full max-w-xs mx-auto space-y-4">
         <div className="flex justify-center">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all shadow-md hover:shadow-lg"
-            aria-label="Toggle settings"
+            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
+            aria-label={`${showSettings ? 'Close' : 'Open'} settings`}
+            aria-expanded={showSettings}
           >
             <Settings size={18} className="text-gray-400" />
           </button>
         </div>
 
-        {/* Settings Menu */}
         {showSettings && (
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white">Settings</h3>
               <button
                 onClick={() => setShowSettings(false)}
-                className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
                 aria-label="Close settings"
               >
                 <X size={12} className="text-gray-400" />
@@ -375,7 +402,6 @@ export default function GameFinder() {
             </div>
             
             <div className="space-y-3">
-              {/* NSFW Mode Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <span className="text-lg" role="img" aria-label="NSFW">🔞</span>
@@ -383,18 +409,19 @@ export default function GameFinder() {
                 </div>
                 <button
                   onClick={handleNSFWToggle}
-                  className={`w-10 h-5 rounded-full transition-all shadow-inner ${
+                  className={`w-10 h-5 rounded-full transition-all duration-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 ${
                     inputs.nsfwMode ? 'bg-red-600' : 'bg-gray-600'
                   }`}
                   aria-label={`NSFW mode ${inputs.nsfwMode ? 'enabled' : 'disabled'}`}
+                  aria-pressed={inputs.nsfwMode}
+                  role="switch"
                 >
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm ${
                     inputs.nsfwMode ? 'translate-x-5' : 'translate-x-0.5'
                   }`} />
                 </button>
               </div>
 
-              {/* Drinking Mode Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <span className="text-lg" role="img" aria-label="Drinking">🍺</span>
@@ -402,12 +429,14 @@ export default function GameFinder() {
                 </div>
                 <button
                   onClick={handleDrinkingToggle}
-                  className={`w-10 h-5 rounded-full transition-all shadow-inner ${
+                  className={`w-10 h-5 rounded-full transition-all duration-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 ${
                     inputs.drinkingMode ? 'bg-blue-600' : 'bg-gray-600'
                   }`}
                   aria-label={`Drinking mode ${inputs.drinkingMode ? 'enabled' : 'disabled'}`}
+                  aria-pressed={inputs.drinkingMode}
+                  role="switch"
                 >
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm ${
                     inputs.drinkingMode ? 'translate-x-5' : 'translate-x-0.5'
                   }`} />
                 </button>
@@ -416,10 +445,9 @@ export default function GameFinder() {
           </div>
         )}
 
-        {/* Players Input */}
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-8 h-12">
+            <div className="flex items-center justify-center w-8 h-12 flex-shrink-0">
               <span className="text-2xl" role="img" aria-label="Players">👥</span>
             </div>
             <input
@@ -431,16 +459,17 @@ export default function GameFinder() {
               onBlur={handlePlayersBlur}
               onFocus={(e) => e.target.select()}
               placeholder="1-20"
-              className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none px-3 shadow-inner"
-              aria-label="Number of players"
+              className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 px-3 shadow-inner transition-all duration-200"
+              aria-label="Number of players (1-20)"
+              min="1"
+              max="20"
             />
           </div>
         </div>
 
-        {/* Duration Input */}
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-8 h-12">
+            <div className="flex items-center justify-center w-8 h-12 flex-shrink-0">
               <span className="text-2xl" role="img" aria-label="Duration">🕐</span>
             </div>
             <input
@@ -452,22 +481,23 @@ export default function GameFinder() {
               onBlur={handleDurationBlur}
               onFocus={(e) => e.target.select()}
               placeholder="5-120"
-              className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none px-3 shadow-inner"
-              aria-label="Duration in minutes"
+              className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 px-3 shadow-inner transition-all duration-200"
+              aria-label="Duration in minutes (5-120)"
+              min="5"
+              max="120"
             />
           </div>
         </div>
 
-        {/* Vibe Input */}
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-8 h-12">
+            <div className="flex items-center justify-center w-8 h-12 flex-shrink-0">
               <span className="text-2xl" role="img" aria-label="Vibe">✨</span>
             </div>
             <select
               value={inputs.vibe}
               onChange={(e) => handleVibeChange(e.target.value)}
-              className="flex-1 h-12 bg-gray-700 border border-gray-600 rounded px-3 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
+              className="flex-1 h-12 bg-gray-700 border border-gray-600 rounded px-3 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 text-sm shadow-inner transition-all duration-200"
               aria-label="Game vibe"
             >
               {VIBE_OPTIONS.map((option) => (
@@ -479,7 +509,6 @@ export default function GameFinder() {
           </div>
         </div>
 
-        {/* Suggestions Section */}
         {gameMatches.length === 0 && suggestions.length > 0 && (
           <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-4">
             <div className="flex items-center space-x-2 mb-3">
@@ -496,7 +525,6 @@ export default function GameFinder() {
           </div>
         )}
 
-        {/* Game Count Indicator */}
         {gameMatches.length > 0 && (
           <div className="text-center">
             <span className="text-sm text-gray-400">
@@ -505,19 +533,21 @@ export default function GameFinder() {
           </div>
         )}
 
-        {/* Play Button */}
         <div className="flex justify-center pt-2">
           <button
             onClick={handleStartSwiping}
-            disabled={gameMatches.length === 0}
-            className="w-16 h-16 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all shadow-lg hover:shadow-xl disabled:shadow-md"
+            disabled={gameMatches.length === 0 || isLoading}
+            className="w-16 h-16 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl disabled:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
             aria-label="Start swiping through games"
           >
-            <Play size={24} />
+            {isLoading ? (
+              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Play size={24} />
+            )}
           </button>
         </div>
 
-        {/* No Games Message */}
         {gameMatches.length === 0 && (
           <div className="text-center">
             <div className="text-4xl mb-2" role="img" aria-label="No games">🎮</div>
