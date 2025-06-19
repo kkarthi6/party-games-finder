@@ -389,63 +389,60 @@ export default function GameFinder() {
         {/* Players Input */}
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
-            <span className="text-2xl">👥</span>
-            <div className="flex-1">
-              <label className="block text-xs text-gray-400 mb-1">Players</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={playersDisplay}
-                onChange={(e) => handlePlayersInputChange(e.target.value)}
-                onBlur={handlePlayersBlur}
-                onFocus={(e) => e.target.select()}
-                placeholder="1-20"
-                className="w-full text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3 shadow-inner"
-              />
+            <div className="flex items-center justify-center w-8 h-12">
+              <span className="text-2xl">👥</span>
             </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={playersDisplay}
+              onChange={(e) => handlePlayersInputChange(e.target.value)}
+              onBlur={handlePlayersBlur}
+              onFocus={(e) => e.target.select()}
+              placeholder="1-20"
+              className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none px-3 shadow-inner"
+            />
           </div>
         </div>
 
         {/* Duration Input */}
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
-            <span className="text-2xl">🕐</span>
-            <div className="flex-1">
-              <label className="block text-xs text-gray-400 mb-1">Duration (minutes)</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={durationDisplay}
-                onChange={(e) => handleDurationInputChange(e.target.value)}
-                onBlur={handleDurationBlur}
-                onFocus={(e) => e.target.select()}
-                placeholder="5-120"
-                className="w-full text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3 shadow-inner"
-              />
+            <div className="flex items-center justify-center w-8 h-12">
+              <span className="text-2xl">🕐</span>
             </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={durationDisplay}
+              onChange={(e) => handleDurationInputChange(e.target.value)}
+              onBlur={handleDurationBlur}
+              onFocus={(e) => e.target.select()}
+              placeholder="5-120"
+              className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none px-3 shadow-inner"
+            />
           </div>
         </div>
 
         {/* Vibe Input */}
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
-            <span className="text-2xl">✨</span>
-            <div className="flex-1">
-              <label className="block text-xs text-gray-400 mb-1">Vibe</label>
-              <select
-                value={inputs.vibe}
-                onChange={(e) => handleVibeChange(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
-              >
-                {VIBE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+            <div className="flex items-center justify-center w-8 h-12">
+              <span className="text-2xl">✨</span>
             </div>
+            <select
+              value={inputs.vibe}
+              onChange={(e) => handleVibeChange(e.target.value)}
+              className="flex-1 h-12 bg-gray-700 border border-gray-600 rounded px-3 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
+            >
+              {VIBE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
