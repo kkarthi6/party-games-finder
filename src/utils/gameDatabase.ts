@@ -534,9 +534,9 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
     if (game.isNSFW && !nsfwMode) continue;
     if (game.isDrinking && !drinkingMode) continue;
     
-    // 2. Player count filtering (STRICT - treat input as upper bound)
-    // Only include games that can be played with the available players or fewer
-    if (game.players.min > players) continue;
+    // 2. Player count filtering (CORRECTED LOGIC)
+    // Game must be playable with the exact number of players available
+    if (game.players.min > players || game.players.max < players) continue;
     
     // 3. Vibe filtering (STRICT if specified)
     if (vibe && game.vibe && game.vibe !== vibe) continue;
@@ -547,21 +547,19 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
     // SCORING SYSTEM (for ranking valid games)
     
     // Player count scoring (50 points max)
-    if (game.players.max <= players) {
-      if (game.players.max === players) {
-        score += 50; // Perfect match - uses all available players
-        reasons.push('Uses all available players');
-      } else if (game.players.min === players) {
-        score += 45; // Exact minimum match
-        reasons.push('Perfect minimum players');
-      } else {
-        score += 40; // Works well within range
-        reasons.push('Good player fit');
-      }
-    } else {
-      // Game's max exceeds available players but min is achievable
-      score += 25;
-      reasons.push('Playable with current group');
+    const playerRange = game.players.max - game.players.min + 1;
+    const playerOptimal = Math.floor((game.players.min + game.players.max) / 2);
+    
+    if (players === playerOptimal) {
+      score += 50; // Perfect sweet spot
+      reasons.push('Optimal player count');
+    } else if (players >= game.players.min && players <= game.players.max) {
+      // Score based on how close to optimal
+      const distanceFromOptimal = Math.abs(players - playerOptimal);
+      const maxDistance = Math.max(playerOptimal - game.players.min, game.players.max - playerOptimal);
+      const proximityScore = 1 - (distanceFromOptimal / maxDistance);
+      score += Math.floor(40 + (proximityScore * 10));
+      reasons.push('Good player fit');
     }
     
     // Duration scoring (30 points max)
@@ -619,7 +617,7 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
     }
     
     // Popular game bonus
-    if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever', 'solitaire'].includes(game.id)) {
+    if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever', 'card-poker'].includes(game.id)) {
       score += 3;
     }
     
@@ -646,9 +644,9 @@ export function getSuggestions(inputs: GameFinderInputs): string[] {
     return true;
   });
   
-  // Check player restrictions
+  // Check player restrictions (CORRECTED)
   const playerFilteredGames = modeFilteredGames.filter(game => 
-    game.players.min <= players
+    game.players.min <= players && game.players.max >= players
   );
   
   // Check vibe restrictions
@@ -663,10 +661,24 @@ export function getSuggestions(inputs: GameFinderInputs): string[] {
       suggestions.push("Try enabling NSFW or Drinking mode for more game options");
     }
   } else if (playerFilteredGames.length === 0) {
-    // Player count is the issue
-    const minPlayersNeeded = Math.min(...modeFilteredGames.map(g => g.players.min));
-    if (minPlayersNeeded > players) {
-      suggestions.push(`Try increasing players to at least ${minPlayersNeeded} for more games`);
+    // Player count is the issue - find what ranges are available
+    const availableRanges = modeFilteredGames.map(g => ({ min: g.players.min, max: g.players.max }));
+    const minAvailable = Math.min(...availableRanges.map(r => r.min));
+    const maxAvailable = Math.max(...availableRanges.map(r => r.max));
+    
+    if (players < minAvailable) {
+      suggestions.push(`Try increasing to at least ${minAvailable} players for more games`);
+    } else if (players > maxAvailable) {
+      suggestions.push(`Try reducing to ${maxAvailable} or fewer players for more games`);
+    } else {
+      // Player count is in a gap - suggest nearby ranges
+      const nearbyGames = modeFilteredGames.filter(g => 
+        Math.abs(g.players.min - players) <= 2 || Math.abs(g.players.max - players) <= 2
+      );
+      if (nearbyGames.length > 0) {
+        const suggestedCounts = [...new Set(nearbyGames.flatMap(g => [g.players.min, g.players.max]))];
+        suggestions.push(`Try ${suggestedCounts.slice(0, 3).join(' or ')} players for more options`);
+      }
     }
   } else if (vibeFilteredGames.length === 0) {
     // Vibe is too restrictive
@@ -684,12 +696,12 @@ export function getSuggestions(inputs: GameFinderInputs): string[] {
       suggestions.push("Try increasing duration to 20+ minutes for more game options");
     }
     
-    if (players < 4) {
-      suggestions.push("Try adding more players for better game variety");
-    }
-    
     if (vibe) {
       suggestions.push("Try 'Any Vibe' to see more games");
+    }
+    
+    if (!nsfwMode && !drinkingMode) {
+      suggestions.push("Try enabling special modes for more variety");
     }
   }
   
