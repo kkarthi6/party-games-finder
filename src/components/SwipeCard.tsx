@@ -8,25 +8,6 @@ interface SwipeCardProps {
 }
 
 export default function SwipeCard({ game, onSwipe, style }: SwipeCardProps) {
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-400';
-      case 'medium': return 'text-yellow-400';
-      case 'hard': return 'text-red-400';
-      default: return 'text-gray-400';
-    }
-  };
-
-  const getCategoryEmoji = (category: string) => {
-    switch (category) {
-      case 'physical': return '🏃';
-      case 'mental': return '🧠';
-      case 'creative': return '🎨';
-      case 'social': return '👥';
-      default: return '🎮';
-    }
-  };
-
   return (
     <div 
       className="absolute inset-0 bg-gray-800 rounded-2xl border border-gray-700 shadow-2xl cursor-grab active:cursor-grabbing select-none"
@@ -34,53 +15,24 @@ export default function SwipeCard({ game, onSwipe, style }: SwipeCardProps) {
     >
       <div className="h-full flex flex-col p-6">
         {/* Game Header */}
-        <div className="text-center mb-4">
-          <div className="text-6xl mb-2">{game.emoji}</div>
-          <h3 className="text-xl font-bold text-white mb-1">{game.name}</h3>
-          <p className="text-gray-400 text-sm">{game.description}</p>
+        <div className="text-center mb-6">
+          <div className="text-8xl mb-4">{game.emoji}</div>
+          <h3 className="text-2xl font-bold text-white mb-3">{game.name}</h3>
+          <p className="text-gray-300 text-base leading-relaxed mb-6">{game.description}</p>
         </div>
 
-        {/* Game Stats */}
-        <div className="flex-1 space-y-3">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">👥 Players</span>
-            <span className="text-orange-400 font-medium">
-              {game.players.min === game.players.max 
-                ? game.players.min 
-                : `${game.players.min}-${game.players.max}`}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">⏱️ Duration</span>
-            <span className="text-orange-400 font-medium">{game.duration} min</span>
-          </div>
-          
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">🎯 Items</span>
-            <span className="text-orange-400 font-medium text-right">
-              {game.items.join(', ')}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">📊 Difficulty</span>
-            <span className={`font-medium capitalize ${getDifficultyColor(game.difficulty)}`}>
-              {game.difficulty}
-            </span>
-          </div>
-          
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-400">🏷️ Type</span>
-            <span className="text-orange-400 font-medium flex items-center space-x-1">
-              <span>{getCategoryEmoji(game.category)}</span>
-              <span className="capitalize">{game.category}</span>
-            </span>
+        {/* How to Play */}
+        <div className="flex-1 mb-6">
+          <h4 className="text-lg font-semibold text-orange-400 mb-3">How to Play</h4>
+          <div className="bg-gray-700/30 rounded-lg p-4">
+            <p className="text-gray-200 text-sm leading-relaxed">
+              {game.instructions || 'Instructions not available for this game.'}
+            </p>
           </div>
         </div>
 
         {/* Swipe Instructions */}
-        <div className="mt-6 flex justify-between items-center">
+        <div className="flex justify-between items-center">
           <button
             onClick={() => onSwipe('left')}
             className="w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-colors"
