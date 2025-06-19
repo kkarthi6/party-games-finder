@@ -525,200 +525,223 @@ export const GAMES: Game[] = [
 export function findGames(inputs: GameFinderInputs): GameMatch[] {
   const { players, duration, nsfwMode, drinkingMode, vibe } = inputs;
   
+  // Input validation
+  if (players <= 0 || duration <= 0) {
+    return [];
+  }
+  
   const matches: GameMatch[] = [];
   
   for (const game of GAMES) {
-    // STRICT FILTERING - Must pass ALL criteria
+    // CORE FILTERING LOGIC per technical specifications
     
     // 1. Mode filtering (STRICT)
     if (game.isNSFW && !nsfwMode) continue;
     if (game.isDrinking && !drinkingMode) continue;
     
-    // 2. Player count filtering (CORRECTED LOGIC)
-    // Game must be playable with the exact number of players available
-    if (game.players.min > players || game.players.max < players) continue;
+    // 2. Player count filtering (STRICT - exact specification)
+    // A game is relevant if and only if: game.min_players <= num_players <= game.max_players
+    if (!(game.players.min <= players && players <= game.players.max)) continue;
     
-    // 3. Vibe filtering (STRICT if specified)
+    // 3. Duration filtering (STRICT - exact specification)
+    // A game is relevant if and only if: game.duration_minutes <= duration_minutes
+    if (game.duration > duration) continue;
+    
+    // 4. Vibe filtering (STRICT if specified)
     if (vibe && game.vibe && game.vibe !== vibe) continue;
     
+    // SCORING SYSTEM for prioritization
     let score = 0;
     const reasons: string[] = [];
     
-    // SCORING SYSTEM (for ranking valid games)
+    // Duration scoring (50 points max) - prioritize games closest to max duration
+    const durationDiff = Math.abs(game.duration - duration);
+    const durationScore = Math.max(0, 50 - (durationDiff * 2));
+    score += durationScore;
     
-    // Player count scoring (50 points max)
+    if (game.duration === duration) {
+      reasons.push('Perfect duration match');
+    } else if (durationDiff <= 5) {
+      reasons.push('Excellent duration fit');
+    } else if (durationDiff <= 15) {
+      reasons.push('Good duration fit');
+    } else {
+      reasons.push('Fits within time limit');
+    }
+    
+    // Player count scoring (40 points max) - prioritize optimal player counts
     const playerRange = game.players.max - game.players.min + 1;
     const playerOptimal = Math.floor((game.players.min + game.players.max) / 2);
     
     if (players === playerOptimal) {
-      score += 50; // Perfect sweet spot
+      score += 40; // Perfect sweet spot
       reasons.push('Optimal player count');
-    } else if (players >= game.players.min && players <= game.players.max) {
+    } else {
       // Score based on how close to optimal
       const distanceFromOptimal = Math.abs(players - playerOptimal);
       const maxDistance = Math.max(playerOptimal - game.players.min, game.players.max - playerOptimal);
-      const proximityScore = 1 - (distanceFromOptimal / maxDistance);
-      score += Math.floor(40 + (proximityScore * 10));
-      reasons.push('Good player fit');
+      const proximityScore = maxDistance > 0 ? 1 - (distanceFromOptimal / maxDistance) : 1;
+      score += Math.floor(25 + (proximityScore * 15));
+      
+      if (players >= game.players.min && players <= game.players.max) {
+        reasons.push('Good player fit');
+      }
     }
     
-    // Duration scoring (30 points max)
-    if (game.duration <= duration) {
-      const ratio = game.duration / duration;
-      if (ratio >= 0.8) {
-        score += 30; // Uses most of the time well
-        reasons.push('Perfect time fit');
-      } else if (ratio >= 0.5) {
-        score += 25; // Good time usage
-        reasons.push('Good time fit');
-      } else {
-        score += 15; // Quick game
-        reasons.push('Quick game');
-      }
-    } else {
-      // Game is longer than desired time
-      const overageRatio = duration / game.duration;
-      if (overageRatio >= 0.8) {
-        score += 10; // Slightly over but manageable
-        reasons.push('Slightly longer than preferred');
-      } else if (overageRatio >= 0.6) {
-        score += 5; // Noticeably over
-        reasons.push('Longer than preferred');
-      }
-      // Games much longer than desired get no duration points
-    }
-    
-    // Vibe scoring (20 points max)
+    // Vibe scoring (10 points max)
     if (vibe && game.vibe === vibe) {
-      score += 20;
+      score += 10;
       reasons.push('Perfect vibe match');
     } else if (!vibe) {
-      score += 10; // Bonus for no vibe restriction
+      score += 5; // Small bonus for no vibe restriction
     }
     
-    // Context bonuses (10 points max total)
+    // Quality bonuses (5 points max total)
     
-    // Single player bonus
-    if (players === 1 && game.players.min === 1 && game.players.max === 1) {
-      score += 10;
-      reasons.push('Perfect for solo play');
-    }
-    
-    // Small group optimization (2-4 players)
-    if (players >= 2 && players <= 4 && game.players.max <= 6) {
-      score += 5;
-      reasons.push('Great for small groups');
-    }
-    
-    // Large group optimization (8+ players)
-    if (players >= 8 && (game.category === 'social' || game.category === 'physical')) {
-      score += 5;
-      reasons.push('Excellent for large groups');
-    }
-    
-    // Popular game bonus
+    // Popular/well-known games bonus
     if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever', 'card-poker'].includes(game.id)) {
       score += 3;
+      reasons.push('Popular game');
     }
     
-    // Only include games with reasonable scores
-    if (score >= 15) {
-      matches.push({ game, score, reasons });
+    // Category bonuses based on group size
+    if (players >= 8 && (game.category === 'social' || game.category === 'physical')) {
+      score += 2;
+      reasons.push('Great for large groups');
+    } else if (players <= 3 && (game.category === 'mental' || game.category === 'creative')) {
+      score += 2;
+      reasons.push('Perfect for small groups');
     }
+    
+    matches.push({ game, score, reasons });
   }
   
-  return matches.sort((a, b) => b.score - a.score);
+  // Sort by score (highest first), then by duration proximity as tiebreaker
+  return matches.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    // Tiebreaker: prefer games closer to desired duration
+    const aDurationDiff = Math.abs(a.game.duration - duration);
+    const bDurationDiff = Math.abs(b.game.duration - duration);
+    return aDurationDiff - bDurationDiff;
+  });
 }
 
 export function getSuggestions(inputs: GameFinderInputs): string[] {
   const { players, duration, nsfwMode, drinkingMode, vibe } = inputs;
   const suggestions: string[] = [];
   
-  // Check what's limiting the results
+  // Input validation
+  if (players <= 0 || duration <= 0) {
+    suggestions.push("Please enter valid positive numbers for players and duration");
+    return suggestions;
+  }
+  
+  // Check what's limiting the results using the EXACT same logic as findGames
   const allGames = GAMES;
   
-  // Check mode restrictions
+  // Step 1: Mode filtering
   const modeFilteredGames = allGames.filter(game => {
     if (game.isNSFW && !nsfwMode) return false;
     if (game.isDrinking && !drinkingMode) return false;
     return true;
   });
   
-  // Check player restrictions (CORRECTED)
+  // Step 2: Player filtering (EXACT specification)
   const playerFilteredGames = modeFilteredGames.filter(game => 
-    game.players.min <= players && game.players.max >= players
+    game.players.min <= players && players <= game.players.max
   );
   
-  // Check vibe restrictions
-  const vibeFilteredGames = playerFilteredGames.filter(game =>
+  // Step 3: Duration filtering (EXACT specification)
+  const durationFilteredGames = playerFilteredGames.filter(game =>
+    game.duration <= duration
+  );
+  
+  // Step 4: Vibe filtering
+  const vibeFilteredGames = durationFilteredGames.filter(game =>
     !vibe || !game.vibe || game.vibe === vibe
   );
   
   // Generate suggestions based on what's limiting results
   
   if (modeFilteredGames.length === 0) {
-    if (!nsfwMode && !drinkingMode) {
-      suggestions.push("Try enabling NSFW or Drinking mode for more game options");
-    }
-  } else if (playerFilteredGames.length === 0) {
-    // Player count is the issue - find what ranges are available
+    suggestions.push("No games available - try enabling NSFW or Drinking modes");
+    return suggestions;
+  }
+  
+  if (playerFilteredGames.length === 0) {
+    // Player count is the issue - find available ranges
     const availableRanges = modeFilteredGames.map(g => ({ min: g.players.min, max: g.players.max }));
-    const minAvailable = Math.min(...availableRanges.map(r => r.min));
-    const maxAvailable = Math.max(...availableRanges.map(r => r.max));
+    const gamesWithPlayerCounts = availableRanges.filter(r => r.min <= players || r.max >= players);
     
-    if (players < minAvailable) {
-      suggestions.push(`Try increasing to at least ${minAvailable} players for more games`);
-    } else if (players > maxAvailable) {
-      suggestions.push(`Try reducing to ${maxAvailable} or fewer players for more games`);
-    } else {
-      // Player count is in a gap - suggest nearby ranges
-      const nearbyGames = modeFilteredGames.filter(g => 
-        Math.abs(g.players.min - players) <= 2 || Math.abs(g.players.max - players) <= 2
-      );
-      if (nearbyGames.length > 0) {
-        const suggestedCounts = [...new Set(nearbyGames.flatMap(g => [g.players.min, g.players.max]))];
-        suggestions.push(`Try ${suggestedCounts.slice(0, 3).join(' or ')} players for more options`);
+    if (gamesWithPlayerCounts.length === 0) {
+      const minAvailable = Math.min(...availableRanges.map(r => r.min));
+      const maxAvailable = Math.max(...availableRanges.map(r => r.max));
+      
+      if (players < minAvailable) {
+        suggestions.push(`Try ${minAvailable}+ players - no games support ${players} player${players === 1 ? '' : 's'}`);
+      } else if (players > maxAvailable) {
+        suggestions.push(`Try ${maxAvailable} or fewer players - no games support ${players} players`);
       }
+    } else {
+      // Find nearby valid player counts
+      const validCounts = new Set<number>();
+      availableRanges.forEach(range => {
+        for (let i = range.min; i <= range.max; i++) {
+          if (Math.abs(i - players) <= 2) {
+            validCounts.add(i);
+          }
+        }
+      });
+      
+      if (validCounts.size > 0) {
+        const sortedCounts = Array.from(validCounts).sort((a, b) => Math.abs(a - players) - Math.abs(b - players));
+        suggestions.push(`Try ${sortedCounts.slice(0, 3).join(' or ')} players for available games`);
+      }
+    }
+  } else if (durationFilteredGames.length === 0) {
+    // Duration is the issue
+    const availableDurations = playerFilteredGames.map(g => g.duration);
+    const minDuration = Math.min(...availableDurations);
+    
+    suggestions.push(`Try ${minDuration}+ minutes - shortest available game is ${minDuration} minutes`);
+    
+    // Suggest some specific longer durations that would unlock more games
+    const commonDurations = [30, 45, 60];
+    const viableDurations = commonDurations.filter(d => d > duration && availableDurations.some(ad => ad <= d));
+    if (viableDurations.length > 0) {
+      suggestions.push(`Consider ${viableDurations[0]} minutes for more game options`);
     }
   } else if (vibeFilteredGames.length === 0) {
     // Vibe is too restrictive
-    suggestions.push("Try selecting 'Any Vibe' for more game options");
-    
-    // Suggest compatible vibes
-    const availableVibes = new Set(playerFilteredGames.map(g => g.vibe).filter(Boolean));
+    const availableVibes = new Set(durationFilteredGames.map(g => g.vibe).filter(Boolean));
     if (availableVibes.size > 0) {
       const vibeList = Array.from(availableVibes).slice(0, 3).join(', ');
-      suggestions.push(`Available vibes for your group: ${vibeList}`);
+      suggestions.push(`Try vibes: ${vibeList} - or select 'Any Vibe'`);
+    } else {
+      suggestions.push("Try 'Any Vibe' for more options");
     }
-  } else if (vibeFilteredGames.length < 5) {
+  } else if (vibeFilteredGames.length < 3) {
     // Few results - suggest expanding criteria
-    if (duration < 20) {
-      suggestions.push("Try increasing duration to 20+ minutes for more game options");
-    }
-    
-    if (vibe) {
-      suggestions.push("Try 'Any Vibe' to see more games");
+    if (duration < 30) {
+      suggestions.push("Try 30+ minutes for more variety");
     }
     
     if (!nsfwMode && !drinkingMode) {
-      suggestions.push("Try enabling special modes for more variety");
+      suggestions.push("Enable special modes for more games");
+    }
+    
+    if (vibe) {
+      suggestions.push("Try 'Any Vibe' to see all available games");
     }
   }
   
-  // Specific suggestions based on player count
+  // Context-specific suggestions
   if (players === 1) {
-    suggestions.push("Perfect for solo games! Try puzzle games or meditation");
-  } else if (players === 2) {
-    suggestions.push("Great for card games and strategic challenges");
-  } else if (players >= 8) {
-    suggestions.push("Large groups are perfect for party games and physical activities");
-  }
-  
-  // Duration-based suggestions
-  if (duration <= 10) {
-    suggestions.push("Short sessions work best with quick physical games");
-  } else if (duration >= 60) {
-    suggestions.push("Long sessions are perfect for strategic games and tournaments");
+    suggestions.push("Solo games: puzzles, card games, and meditation work great alone");
+  } else if (players >= 10) {
+    suggestions.push("Large groups: try party games and physical activities");
   }
   
   return suggestions.slice(0, 3); // Limit to 3 most relevant suggestions
