@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Plus, Minus, Play, Heart, RotateCcw } from 'lucide-react';
+import { Play, Heart, RotateCcw } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
 import { findGames, POPULAR_ITEMS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
@@ -28,20 +28,6 @@ export default function GameFinder() {
     const likedIds = swipeActions.filter(action => action.action === 'like').map(action => action.gameId);
     return gameMatches.filter(match => likedIds.includes(match.game.id));
   }, [swipeActions, gameMatches]);
-
-  const handlePlayerChange = (delta: number) => {
-    setInputs(prev => ({
-      ...prev,
-      players: Math.max(1, Math.min(20, prev.players + delta))
-    }));
-  };
-
-  const handleDurationChange = (delta: number) => {
-    setInputs(prev => ({
-      ...prev,
-      duration: Math.max(5, Math.min(120, prev.duration + delta))
-    }));
-  };
 
   const handlePlayersInputChange = (value: string) => {
     const num = parseInt(value) || 1;
@@ -306,27 +292,15 @@ export default function GameFinder() {
           <div className="text-center mb-3">
             <span className="text-2xl">👥</span>
           </div>
-          <div className="flex items-center justify-center space-x-3">
-            <button
-              onClick={() => handlePlayerChange(-1)}
-              className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
-            >
-              <Minus size={14} />
-            </button>
+          <div className="flex justify-center">
             <input
               type="number"
               value={inputs.players}
               onChange={(e) => handlePlayersInputChange(e.target.value)}
               min="1"
               max="20"
-              className="w-16 text-xl font-semibold text-orange-400 bg-transparent text-center border-b border-gray-600 focus:border-orange-400 focus:outline-none"
+              className="w-20 text-2xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2"
             />
-            <button
-              onClick={() => handlePlayerChange(1)}
-              className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
-            >
-              <Plus size={14} />
-            </button>
           </div>
         </div>
 
@@ -335,27 +309,15 @@ export default function GameFinder() {
           <div className="text-center mb-3">
             <span className="text-2xl">🕐</span>
           </div>
-          <div className="flex items-center justify-center space-x-3">
-            <button
-              onClick={() => handleDurationChange(-5)}
-              className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
-            >
-              <Minus size={14} />
-            </button>
+          <div className="flex justify-center">
             <input
               type="number"
               value={inputs.duration}
               onChange={(e) => handleDurationInputChange(e.target.value)}
               min="5"
               max="120"
-              className="w-16 text-xl font-semibold text-orange-400 bg-transparent text-center border-b border-gray-600 focus:border-orange-400 focus:outline-none"
+              className="w-20 text-2xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2"
             />
-            <button
-              onClick={() => handleDurationChange(5)}
-              className="w-8 h-8 bg-gray-700 hover:bg-orange-600 rounded-full flex items-center justify-center transition-colors"
-            >
-              <Plus size={14} />
-            </button>
           </div>
         </div>
 
