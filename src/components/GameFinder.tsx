@@ -176,7 +176,6 @@ export default function GameFinder() {
       <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-orange-400 mb-2">Party Games Finder</h1>
             <div className="flex items-center justify-center space-x-4">
               <Heart className="text-red-500" size={20} />
               <span className="text-gray-400">Your Liked Games</span>
@@ -292,11 +291,6 @@ export default function GameFinder() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
       <div className="w-full max-w-sm space-y-4">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-orange-400">Party Games Finder</h1>
-        </div>
-
         {/* Players and Time Inputs - Side by Side */}
         <div className="grid grid-cols-2 gap-3">
           {/* Players Input */}
@@ -328,36 +322,6 @@ export default function GameFinder() {
               />
             </div>
           </div>
-        </div>
-
-        {/* Items Input */}
-        <div className="bg-gray-800 rounded-lg p-4 relative">
-          <div className="flex items-center space-x-4">
-            <span className="text-3xl">📋</span>
-            <input
-              type="text"
-              value={inputs.items}
-              onChange={(e) => handleItemsChange(e.target.value)}
-              onFocus={() => setShowItemSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
-              placeholder="cards, paper, nothing..."
-              className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
-            />
-          </div>
-          
-          {showItemSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
-              {filteredSuggestions.map((item) => (
-                <button
-                  key={item}
-                  onClick={() => handleItemSuggestionClick(item)}
-                  className="w-full text-center px-3 py-2 hover:bg-gray-600 transition-colors text-2xl"
-                >
-                  {getItemEmoji(item)}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Toggle Buttons */}
@@ -397,15 +361,46 @@ export default function GameFinder() {
           </div>
         </div>
 
+        {/* Items Input */}
+        <div className="bg-gray-800 rounded-lg p-4 relative">
+          <div className="flex items-center space-x-4">
+            <span className="text-3xl">📋</span>
+            <input
+              type="text"
+              value={inputs.items}
+              onChange={(e) => handleItemsChange(e.target.value)}
+              onFocus={() => setShowItemSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
+              placeholder="cards, paper, nothing..."
+              className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+            />
+          </div>
+          
+          {showItemSuggestions && filteredSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
+              {filteredSuggestions.map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleItemSuggestionClick(item)}
+                  className="w-full text-center px-3 py-2 hover:bg-gray-600 transition-colors text-2xl"
+                >
+                  {getItemEmoji(item)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Play Button */}
-        <button
-          onClick={handleStartSwiping}
-          disabled={gameMatches.length === 0}
-          className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
-        >
-          <Play size={18} />
-          <span>Find Games ({gameMatches.length})</span>
-        </button>
+        <div className="flex justify-center">
+          <button
+            onClick={handleStartSwiping}
+            disabled={gameMatches.length === 0}
+            className="w-16 h-16 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-colors"
+          >
+            <Play size={24} />
+          </button>
+        </div>
       </div>
     </div>
   );
