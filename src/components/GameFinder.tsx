@@ -299,52 +299,48 @@ export default function GameFinder() {
 
         {/* Players Input */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-center mb-3">
-            <span className="text-2xl">👥</span>
-          </div>
-          <div className="flex justify-center">
+          <div className="flex items-center space-x-4">
+            <span className="text-3xl">👥</span>
             <input
               type="number"
               value={inputs.players}
               onChange={(e) => handlePlayersInputChange(e.target.value)}
               min="1"
               max="20"
-              className="w-20 text-2xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2"
+              className="flex-1 text-xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3"
             />
           </div>
         </div>
 
         {/* Duration Input */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <div className="text-center mb-3">
-            <span className="text-2xl">🕐</span>
-          </div>
-          <div className="flex justify-center">
+          <div className="flex items-center space-x-4">
+            <span className="text-3xl">🕐</span>
             <input
               type="number"
               value={inputs.duration}
               onChange={(e) => handleDurationInputChange(e.target.value)}
               min="5"
               max="120"
-              className="w-20 text-2xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2"
+              className="flex-1 text-xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3"
             />
           </div>
         </div>
 
         {/* Items Input */}
         <div className="bg-gray-800 rounded-lg p-4 relative">
-          <div className="text-center mb-3">
-            <span className="text-2xl">📋</span>
+          <div className="flex items-center space-x-4">
+            <span className="text-3xl">📋</span>
+            <input
+              type="text"
+              value={inputs.items}
+              onChange={(e) => handleItemsChange(e.target.value)}
+              onFocus={() => setShowItemSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
+              placeholder="cards, paper, nothing..."
+              className="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+            />
           </div>
-          <input
-            type="text"
-            value={inputs.items}
-            onChange={(e) => handleItemsChange(e.target.value)}
-            onFocus={() => setShowItemSuggestions(true)}
-            onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
-            placeholder="cards, paper, nothing..."
-            className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
-          />
           
           {showItemSuggestions && filteredSuggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
@@ -365,36 +361,36 @@ export default function GameFinder() {
         <div className="grid grid-cols-2 gap-3">
           {/* NSFW Mode Toggle */}
           <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-center mb-2">
+            <div className="flex items-center space-x-3">
               <span className="text-2xl">🔞</span>
+              <button
+                onClick={handleNSFWToggle}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  inputs.nsfwMode
+                    ? 'bg-red-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                NSFW
+              </button>
             </div>
-            <button
-              onClick={handleNSFWToggle}
-              className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                inputs.nsfwMode
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              NSFW Mode
-            </button>
           </div>
 
           {/* Drinking Mode Toggle */}
           <div className="bg-gray-800 rounded-lg p-4">
-            <div className="text-center mb-2">
+            <div className="flex items-center space-x-3">
               <span className="text-2xl">🍺</span>
+              <button
+                onClick={handleDrinkingToggle}
+                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                  inputs.drinkingMode
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                Drinking
+              </button>
             </div>
-            <button
-              onClick={handleDrinkingToggle}
-              className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                inputs.drinkingMode
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              Drinking Games
-            </button>
           </div>
         </div>
 
