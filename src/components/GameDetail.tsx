@@ -34,7 +34,7 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
         <div className="flex items-center mb-6">
           <button
             onClick={onBack}
-            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors mr-4"
+            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors mr-4 shadow-lg hover:shadow-xl"
           >
             <ArrowLeft size={20} className="text-orange-400" />
           </button>
@@ -42,7 +42,7 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
         </div>
 
         {/* Game Card */}
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6">
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-6 mb-6 shadow-xl">
           {/* Game Header */}
           <div className="text-center mb-6">
             <div className="text-8xl mb-3">{game.emoji}</div>
@@ -52,7 +52,7 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
 
           {/* Game Stats Grid */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center shadow-md">
               <div className="text-2xl mb-1">👥</div>
               <div className="text-xs text-gray-400 mb-1">Players</div>
               <div className="text-orange-400 font-semibold">
@@ -62,21 +62,21 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
               </div>
             </div>
             
-            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center shadow-md">
               <div className="text-2xl mb-1">⏱️</div>
               <div className="text-xs text-gray-400 mb-1">Duration</div>
               <div className="text-orange-400 font-semibold">{game.duration} min</div>
             </div>
             
-            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center shadow-md">
               <div className="text-2xl mb-1">📊</div>
               <div className="text-xs text-gray-400 mb-1">Difficulty</div>
-              <div className={`px-2 py-1 rounded text-xs font-semibold capitalize ${getDifficultyColor(game.difficulty)}`}>
+              <div className={`px-2 py-1 rounded text-xs font-semibold capitalize shadow-sm ${getDifficultyColor(game.difficulty)}`}>
                 {game.difficulty}
               </div>
             </div>
             
-            <div className="bg-gray-700/50 rounded-lg p-3 text-center">
+            <div className="bg-gray-700/50 rounded-lg p-3 text-center shadow-md">
               <div className="text-2xl mb-1">{getCategoryEmoji(game.category)}</div>
               <div className="text-xs text-gray-400 mb-1">Type</div>
               <div className="text-orange-400 font-semibold capitalize">{game.category}</div>
@@ -93,7 +93,7 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
               {game.items.map((item, index) => (
                 <span
                   key={index}
-                  className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded-full text-sm"
+                  className="px-3 py-1 bg-orange-600/20 text-orange-400 rounded-full text-sm shadow-sm"
                 >
                   {item}
                 </span>
@@ -108,7 +108,7 @@ export default function GameDetail({ game, onBack }: GameDetailProps) {
                 <span className="mr-2">📋</span>
                 How to Play
               </h3>
-              <div className="bg-gray-700/30 rounded-lg p-4">
+              <div className="bg-gray-700/30 rounded-lg p-4 shadow-inner">
                 <p className="text-gray-300 text-sm leading-relaxed">
                   {game.instructions}
                 </p>
