@@ -15,6 +15,10 @@ export default function GameFinder() {
     vibe: ''
   });
   
+  // Separate display values for inputs to allow empty states
+  const [playersDisplay, setPlayersDisplay] = useState('4');
+  const [durationDisplay, setDurationDisplay] = useState('30');
+  
   const [showItemSuggestions, setShowItemSuggestions] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail'>('input');
@@ -34,19 +38,61 @@ export default function GameFinder() {
   }, [swipeActions, gameMatches]);
 
   const handlePlayersInputChange = (value: string) => {
-    const num = parseInt(value) || 1;
-    setInputs(prev => ({
-      ...prev,
-      players: Math.max(1, Math.min(20, num))
-    }));
+    setPlayersDisplay(value);
+    
+    if (value === '') {
+      // Allow empty state temporarily
+      return;
+    }
+    
+    const num = parseInt(value);
+    if (!isNaN(num)) {
+      const validatedNum = Math.max(1, Math.min(20, num));
+      setInputs(prev => ({ ...prev, players: validatedNum }));
+    }
+  };
+
+  const handlePlayersBlur = () => {
+    if (playersDisplay === '' || isNaN(parseInt(playersDisplay))) {
+      // Reset to default if empty or invalid
+      setPlayersDisplay('4');
+      setInputs(prev => ({ ...prev, players: 4 }));
+    } else {
+      // Validate and adjust to nearest valid value
+      const num = parseInt(playersDisplay);
+      const validatedNum = Math.max(1, Math.min(20, num));
+      setPlayersDisplay(validatedNum.toString());
+      setInputs(prev => ({ ...prev, players: validatedNum }));
+    }
   };
 
   const handleDurationInputChange = (value: string) => {
-    const num = parseInt(value) || 5;
-    setInputs(prev => ({
-      ...prev,
-      duration: Math.max(5, Math.min(120, num))
-    }));
+    setDurationDisplay(value);
+    
+    if (value === '') {
+      // Allow empty state temporarily
+      return;
+    }
+    
+    const num = parseInt(value);
+    if (!isNaN(num)) {
+      const validatedNum = Math.max(5, Math.min(120, num));
+      setInputs(prev => ({ ...prev, duration: validatedNum }));
+    }
+  };
+
+  const handleDurationBlur = () => {
+    if (durationDisplay === '' || isNaN(parseInt(durationDisplay))) {
+      // Reset to default if empty or invalid
+      setDurationDisplay('30');
+      setInputs(prev => ({ ...prev, duration: 30 }));
+    } else {
+      // Validate and adjust to nearest valid value
+      const num = parseInt(durationDisplay);
+      const validatedNum = Math.max(5, Math.min(120, num));
+      setDurationDisplay(validatedNum.toString());
+      setInputs(prev => ({ ...prev, duration: validatedNum }));
+    }
   };
 
   const handleItemsChange = (value: string) => {
@@ -367,11 +413,14 @@ export default function GameFinder() {
             <div className="flex items-center space-x-2">
               <span className="text-lg">👥</span>
               <input
-                type="number"
-                value={inputs.players}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={playersDisplay}
                 onChange={(e) => handlePlayersInputChange(e.target.value)}
-                min="1"
-                max="20"
+                onBlur={handlePlayersBlur}
+                onFocus={(e) => e.target.select()}
+                placeholder="1-20"
                 className="flex-1 text-sm font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-1 px-1 shadow-inner"
               />
             </div>
@@ -382,11 +431,14 @@ export default function GameFinder() {
             <div className="flex items-center space-x-2">
               <span className="text-lg">🕐</span>
               <input
-                type="number"
-                value={inputs.duration}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={durationDisplay}
                 onChange={(e) => handleDurationInputChange(e.target.value)}
-                min="5"
-                max="120"
+                onBlur={handleDurationBlur}
+                onFocus={(e) => e.target.select()}
+                placeholder="5-120"
                 className="flex-1 text-sm font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-1 px-1 shadow-inner"
               />
             </div>
