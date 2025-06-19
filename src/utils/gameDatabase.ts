@@ -8,7 +8,7 @@ export const VIBE_OPTIONS = [
   { value: 'intimate', label: 'Intimate' },
   { value: 'silly', label: 'Silly' },
   { value: 'strategic', label: 'Strategic' }
-];
+] as const;
 
 export const GAMES: Game[] = [
   {
@@ -482,7 +482,7 @@ export const GAMES: Game[] = [
     id: 'spin-the-bottle-adult',
     name: 'Adult Spin the Bottle',
     emoji: '🍼',
-    players: { min: 4, max: 12 },
+    parameters: { min: 4, max: 12 },
     duration: 30,
     items: ['bottle'],
     description: 'Spin bottle for intimate challenges',
@@ -522,10 +522,15 @@ export const GAMES: Game[] = [
   }
 ];
 
+/**
+ * Finds games matching the specified criteria using strict filtering logic
+ * @param inputs - User preferences for game selection
+ * @returns Array of matching games sorted by relevance score
+ */
 export function findGames(inputs: GameFinderInputs): GameMatch[] {
   const { players, duration, nsfwMode, drinkingMode, vibe } = inputs;
   
-  // Input validation
+  // Input validation - return empty array for invalid inputs
   if (players <= 0 || duration <= 0) {
     return [];
   }
@@ -533,7 +538,7 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
   const matches: GameMatch[] = [];
   
   for (const game of GAMES) {
-    // CORE FILTERING LOGIC per technical specifications
+    // STRICT FILTERING - All criteria must be met (AND logic)
     
     // 1. Mode filtering (STRICT)
     if (game.isNSFW && !nsfwMode) continue;
@@ -570,7 +575,6 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
     }
     
     // Player count scoring (40 points max) - prioritize optimal player counts
-    const playerRange = game.players.max - game.players.min + 1;
     const playerOptimal = Math.floor((game.players.min + game.players.max) / 2);
     
     if (players === playerOptimal) {
@@ -628,6 +632,11 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
   });
 }
 
+/**
+ * Generates helpful suggestions when no games match the current criteria
+ * @param inputs - User preferences for game selection
+ * @returns Array of suggestion strings to help user find games
+ */
 export function getSuggestions(inputs: GameFinderInputs): string[] {
   const { players, duration, nsfwMode, drinkingMode, vibe } = inputs;
   const suggestions: string[] = [];

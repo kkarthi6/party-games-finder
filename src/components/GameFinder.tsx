@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Play, Heart, RotateCcw, Settings, X, Home, Lightbulb } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
 import { findGames, getSuggestions, VIBE_OPTIONS } from '../utils/gameDatabase';
@@ -36,83 +36,79 @@ export default function GameFinder() {
     return gameMatches.filter(match => likedIds.includes(match.game.id));
   }, [swipeActions, gameMatches]);
 
-  const handlePlayersInputChange = (value: string) => {
-    setPlayersDisplay(value);
+  const validateAndSetPlayers = useCallback((value: string) => {
+    if (value === '') return;
     
-    if (value === '') {
-      // Allow empty state temporarily
-      return;
-    }
-    
-    const num = parseInt(value);
+    const num = parseInt(value, 10);
     if (!isNaN(num)) {
       const validatedNum = Math.max(1, Math.min(20, num));
       setInputs(prev => ({ ...prev, players: validatedNum }));
     }
-  };
+  }, []);
 
-  const handlePlayersBlur = () => {
-    if (playersDisplay === '' || isNaN(parseInt(playersDisplay))) {
-      // Reset to default if empty or invalid
+  const validateAndSetDuration = useCallback((value: string) => {
+    if (value === '') return;
+    
+    const num = parseInt(value, 10);
+    if (!isNaN(num)) {
+      const validatedNum = Math.max(5, Math.min(120, num));
+      setInputs(prev => ({ ...prev, duration: validatedNum }));
+    }
+  }, []);
+
+  const handlePlayersInputChange = useCallback((value: string) => {
+    setPlayersDisplay(value);
+    validateAndSetPlayers(value);
+  }, [validateAndSetPlayers]);
+
+  const handlePlayersBlur = useCallback(() => {
+    if (playersDisplay === '' || isNaN(parseInt(playersDisplay, 10))) {
       setPlayersDisplay('4');
       setInputs(prev => ({ ...prev, players: 4 }));
     } else {
-      // Validate and adjust to nearest valid value
-      const num = parseInt(playersDisplay);
+      const num = parseInt(playersDisplay, 10);
       const validatedNum = Math.max(1, Math.min(20, num));
       setPlayersDisplay(validatedNum.toString());
       setInputs(prev => ({ ...prev, players: validatedNum }));
     }
-  };
+  }, [playersDisplay]);
 
-  const handleDurationInputChange = (value: string) => {
+  const handleDurationInputChange = useCallback((value: string) => {
     setDurationDisplay(value);
-    
-    if (value === '') {
-      // Allow empty state temporarily
-      return;
-    }
-    
-    const num = parseInt(value);
-    if (!isNaN(num)) {
-      const validatedNum = Math.max(5, Math.min(120, num));
-      setInputs(prev => ({ ...prev, duration: validatedNum }));
-    }
-  };
+    validateAndSetDuration(value);
+  }, [validateAndSetDuration]);
 
-  const handleDurationBlur = () => {
-    if (durationDisplay === '' || isNaN(parseInt(durationDisplay))) {
-      // Reset to default if empty or invalid
+  const handleDurationBlur = useCallback(() => {
+    if (durationDisplay === '' || isNaN(parseInt(durationDisplay, 10))) {
       setDurationDisplay('30');
       setInputs(prev => ({ ...prev, duration: 30 }));
     } else {
-      // Validate and adjust to nearest valid value
-      const num = parseInt(durationDisplay);
+      const num = parseInt(durationDisplay, 10);
       const validatedNum = Math.max(5, Math.min(120, num));
       setDurationDisplay(validatedNum.toString());
       setInputs(prev => ({ ...prev, duration: validatedNum }));
     }
-  };
+  }, [durationDisplay]);
 
-  const handleVibeChange = (value: string) => {
+  const handleVibeChange = useCallback((value: string) => {
     setInputs(prev => ({ ...prev, vibe: value }));
-  };
+  }, []);
 
-  const handleNSFWToggle = () => {
+  const handleNSFWToggle = useCallback(() => {
     setInputs(prev => ({ ...prev, nsfwMode: !prev.nsfwMode }));
-  };
+  }, []);
 
-  const handleDrinkingToggle = () => {
+  const handleDrinkingToggle = useCallback(() => {
     setInputs(prev => ({ ...prev, drinkingMode: !prev.drinkingMode }));
-  };
+  }, []);
 
-  const handleStartSwiping = () => {
+  const handleStartSwiping = useCallback(() => {
     setCurrentView('swipe');
     setCurrentGameIndex(0);
     setSwipeActions([]);
-  };
+  }, []);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = useCallback((direction: 'left' | 'right') => {
     if (currentGameIndex >= gameMatches.length) return;
 
     const currentGame = gameMatches[currentGameIndex];
@@ -124,88 +120,92 @@ export default function GameFinder() {
     setSwipeActions(prev => [...prev, action]);
     
     if (currentGameIndex + 1 >= gameMatches.length) {
-      // Finished swiping through all games
       setTimeout(() => setCurrentView('results'), 300);
     } else {
       setCurrentGameIndex(prev => prev + 1);
     }
-  };
+  }, [currentGameIndex, gameMatches]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const resetDragState = useCallback(() => {
+    setIsDragging(false);
+    setDragOffset({ x: 0, y: 0 });
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
     setIsDragging(true);
     setDragStart({ x: e.clientX, y: e.clientY });
-  };
+  }, []);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) return;
     
     const deltaX = e.clientX - dragStart.x;
     const deltaY = e.clientY - dragStart.y;
     setDragOffset({ x: deltaX, y: deltaY });
-  };
+  }, [isDragging, dragStart]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     if (!isDragging) return;
-    
-    setIsDragging(false);
     
     if (Math.abs(dragOffset.x) > 100) {
       handleSwipe(dragOffset.x > 0 ? 'right' : 'left');
     }
     
-    setDragOffset({ x: 0, y: 0 });
-  };
+    resetDragState();
+  }, [isDragging, dragOffset.x, handleSwipe, resetDragState]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
+    if (!touch) return;
+    
     setIsDragging(true);
     setDragStart({ x: touch.clientX, y: touch.clientY });
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging) return;
     
     const touch = e.touches[0];
+    if (!touch) return;
+    
     const deltaX = touch.clientX - dragStart.x;
     const deltaY = touch.clientY - dragStart.y;
     setDragOffset({ x: deltaX, y: deltaY });
-  };
+  }, [isDragging, dragStart]);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     if (!isDragging) return;
-    
-    setIsDragging(false);
     
     if (Math.abs(dragOffset.x) > 100) {
       handleSwipe(dragOffset.x > 0 ? 'right' : 'left');
     }
     
-    setDragOffset({ x: 0, y: 0 });
-  };
+    resetDragState();
+  }, [isDragging, dragOffset.x, handleSwipe, resetDragState]);
 
-  const handleGameClick = (game: Game) => {
+  const handleGameClick = useCallback((game: Game) => {
     setSelectedGame(game);
     setCurrentView('detail');
-  };
+  }, []);
 
-  const handleBackToResults = () => {
+  const handleBackToResults = useCallback(() => {
     setSelectedGame(null);
     setCurrentView('results');
-  };
+  }, []);
 
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     setCurrentView('input');
     setCurrentGameIndex(0);
     setSwipeActions([]);
     setSelectedGame(null);
-  };
+  }, []);
 
-  const handleGoHome = () => {
+  const handleGoHome = useCallback(() => {
     setCurrentView('input');
     setCurrentGameIndex(0);
     setSwipeActions([]);
     setSelectedGame(null);
-  };
+  }, []);
 
   if (currentView === 'detail' && selectedGame) {
     return <GameDetail game={selectedGame} onBack={handleBackToResults} />;
@@ -231,7 +231,9 @@ export default function GameFinder() {
                   className="w-full bg-gray-800 hover:bg-gray-700 rounded-lg p-4 border border-gray-700 transition-colors text-left shadow-lg hover:shadow-xl"
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="text-3xl">{match.game.emoji}</span>
+                    <span className="text-3xl" role="img" aria-label={match.game.name}>
+                      {match.game.emoji}
+                    </span>
                     <div className="flex-1">
                       <h3 className="font-semibold text-white">{match.game.name}</h3>
                       <p className="text-sm text-gray-400">{match.game.description}</p>
@@ -247,7 +249,7 @@ export default function GameFinder() {
             </div>
           ) : (
             <div className="bg-gray-800 rounded-lg p-6 text-center mb-6 shadow-lg">
-              <div className="text-4xl mb-3">💔</div>
+              <div className="text-4xl mb-3" role="img" aria-label="No games liked">💔</div>
               <p className="text-gray-300 mb-2">No games liked</p>
               <p className="text-sm text-gray-500">Try adjusting your preferences</p>
             </div>
@@ -277,6 +279,7 @@ export default function GameFinder() {
             <button
               onClick={handleGoHome}
               className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors shadow-lg hover:shadow-xl"
+              aria-label="Go home"
             >
               <Home size={20} className="text-orange-400" />
             </button>
@@ -330,7 +333,9 @@ export default function GameFinder() {
               {Math.abs(dragOffset.x) > 50 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className={`text-6xl ${dragOffset.x > 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {dragOffset.x > 0 ? '👍' : '👎'}
+                    <span role="img" aria-label={dragOffset.x > 0 ? 'Like' : 'Dislike'}>
+                      {dragOffset.x > 0 ? '👍' : '👎'}
+                    </span>
                   </div>
                 </div>
               )}
@@ -349,6 +354,7 @@ export default function GameFinder() {
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all shadow-md hover:shadow-lg"
+            aria-label="Toggle settings"
           >
             <Settings size={18} className="text-gray-400" />
           </button>
@@ -362,6 +368,7 @@ export default function GameFinder() {
               <button
                 onClick={() => setShowSettings(false)}
                 className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors shadow-sm"
+                aria-label="Close settings"
               >
                 <X size={12} className="text-gray-400" />
               </button>
@@ -371,7 +378,7 @@ export default function GameFinder() {
               {/* NSFW Mode Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg">🔞</span>
+                  <span className="text-lg" role="img" aria-label="NSFW">🔞</span>
                   <span className="text-sm text-gray-300">NSFW Mode</span>
                 </div>
                 <button
@@ -379,6 +386,7 @@ export default function GameFinder() {
                   className={`w-10 h-5 rounded-full transition-all shadow-inner ${
                     inputs.nsfwMode ? 'bg-red-600' : 'bg-gray-600'
                   }`}
+                  aria-label={`NSFW mode ${inputs.nsfwMode ? 'enabled' : 'disabled'}`}
                 >
                   <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
                     inputs.nsfwMode ? 'translate-x-5' : 'translate-x-0.5'
@@ -389,7 +397,7 @@ export default function GameFinder() {
               {/* Drinking Mode Toggle */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <span className="text-lg">🍺</span>
+                  <span className="text-lg" role="img" aria-label="Drinking">🍺</span>
                   <span className="text-sm text-gray-300">Drinking Mode</span>
                 </div>
                 <button
@@ -397,6 +405,7 @@ export default function GameFinder() {
                   className={`w-10 h-5 rounded-full transition-all shadow-inner ${
                     inputs.drinkingMode ? 'bg-blue-600' : 'bg-gray-600'
                   }`}
+                  aria-label={`Drinking mode ${inputs.drinkingMode ? 'enabled' : 'disabled'}`}
                 >
                   <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
                     inputs.drinkingMode ? 'translate-x-5' : 'translate-x-0.5'
@@ -411,7 +420,7 @@ export default function GameFinder() {
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
             <div className="flex items-center justify-center w-8 h-12">
-              <span className="text-2xl">👥</span>
+              <span className="text-2xl" role="img" aria-label="Players">👥</span>
             </div>
             <input
               type="text"
@@ -423,6 +432,7 @@ export default function GameFinder() {
               onFocus={(e) => e.target.select()}
               placeholder="1-20"
               className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none px-3 shadow-inner"
+              aria-label="Number of players"
             />
           </div>
         </div>
@@ -431,7 +441,7 @@ export default function GameFinder() {
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
             <div className="flex items-center justify-center w-8 h-12">
-              <span className="text-2xl">🕐</span>
+              <span className="text-2xl" role="img" aria-label="Duration">🕐</span>
             </div>
             <input
               type="text"
@@ -443,6 +453,7 @@ export default function GameFinder() {
               onFocus={(e) => e.target.select()}
               placeholder="5-120"
               className="flex-1 h-12 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none px-3 shadow-inner"
+              aria-label="Duration in minutes"
             />
           </div>
         </div>
@@ -451,12 +462,13 @@ export default function GameFinder() {
         <div className="bg-gray-800 rounded-lg p-4 shadow-md">
           <div className="flex items-center space-x-3">
             <div className="flex items-center justify-center w-8 h-12">
-              <span className="text-2xl">✨</span>
+              <span className="text-2xl" role="img" aria-label="Vibe">✨</span>
             </div>
             <select
               value={inputs.vibe}
               onChange={(e) => handleVibeChange(e.target.value)}
               className="flex-1 h-12 bg-gray-700 border border-gray-600 rounded px-3 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
+              aria-label="Game vibe"
             >
               {VIBE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -499,6 +511,7 @@ export default function GameFinder() {
             onClick={handleStartSwiping}
             disabled={gameMatches.length === 0}
             className="w-16 h-16 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all shadow-lg hover:shadow-xl disabled:shadow-md"
+            aria-label="Start swiping through games"
           >
             <Play size={24} />
           </button>
@@ -507,7 +520,7 @@ export default function GameFinder() {
         {/* No Games Message */}
         {gameMatches.length === 0 && (
           <div className="text-center">
-            <div className="text-4xl mb-2">🎮</div>
+            <div className="text-4xl mb-2" role="img" aria-label="No games">🎮</div>
             <p className="text-gray-400 text-sm">No games match your criteria</p>
             <p className="text-gray-500 text-xs mt-1">Try the suggestions above</p>
           </div>
