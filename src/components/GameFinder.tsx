@@ -323,10 +323,9 @@ export default function GameFinder() {
 
         {/* Items Input */}
         <div className="bg-gray-800 rounded-lg p-4 relative">
-          <label className="text-gray-300 text-sm font-medium mb-2 block flex items-center justify-center">
-            <span className="text-xl mr-2">📋</span>
-            Available Items
-          </label>
+          <div className="text-center mb-3">
+            <span className="text-2xl">📋</span>
+          </div>
           <input
             type="text"
             value={inputs.items}
@@ -343,10 +342,9 @@ export default function GameFinder() {
                 <button
                   key={item}
                   onClick={() => handleItemSuggestionClick(item)}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors text-sm text-gray-200 flex items-center space-x-2"
+                  className="w-full text-center px-3 py-2 hover:bg-gray-600 transition-colors text-2xl"
                 >
-                  <span className="text-lg">{getItemEmoji(item)}</span>
-                  <span>{item}</span>
+                  {getItemEmoji(item)}
                 </button>
               ))}
             </div>
