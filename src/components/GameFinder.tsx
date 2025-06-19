@@ -297,33 +297,36 @@ export default function GameFinder() {
           <h1 className="text-2xl font-bold text-orange-400">Party Games Finder</h1>
         </div>
 
-        {/* Players Input */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-3xl">👥</span>
-            <input
-              type="number"
-              value={inputs.players}
-              onChange={(e) => handlePlayersInputChange(e.target.value)}
-              min="1"
-              max="20"
-              className="flex-1 text-xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3"
-            />
+        {/* Players and Time Inputs - Side by Side */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Players Input */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">👥</span>
+              <input
+                type="number"
+                value={inputs.players}
+                onChange={(e) => handlePlayersInputChange(e.target.value)}
+                min="1"
+                max="20"
+                className="flex-1 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-2"
+              />
+            </div>
           </div>
-        </div>
 
-        {/* Duration Input */}
-        <div className="bg-gray-800 rounded-lg p-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-3xl">🕐</span>
-            <input
-              type="number"
-              value={inputs.duration}
-              onChange={(e) => handleDurationInputChange(e.target.value)}
-              min="5"
-              max="120"
-              className="flex-1 text-xl font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3"
-            />
+          {/* Duration Input */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="flex items-center space-x-3">
+              <span className="text-2xl">🕐</span>
+              <input
+                type="number"
+                value={inputs.duration}
+                onChange={(e) => handleDurationInputChange(e.target.value)}
+                min="5"
+                max="120"
+                className="flex-1 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-2"
+              />
+            </div>
           </div>
         </div>
 
@@ -401,6 +404,7 @@ export default function GameFinder() {
           className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg flex items-center justify-center space-x-2 transition-colors"
         >
           <Play size={18} />
+          <span>Find Games ({gameMatches.length})</span>
         </button>
       </div>
     </div>
