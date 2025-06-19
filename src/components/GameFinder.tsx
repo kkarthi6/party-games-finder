@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Play, Heart, RotateCcw } from 'lucide-react';
+import { Play, Heart, RotateCcw, Settings, X } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
 import { findGames, POPULAR_ITEMS, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
@@ -16,6 +16,7 @@ export default function GameFinder() {
   });
   
   const [showItemSuggestions, setShowItemSuggestions] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail'>('input');
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
   const [swipeActions, setSwipeActions] = useState<SwipeAction[]>([]);
@@ -296,6 +297,69 @@ export default function GameFinder() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
       <div className="w-full max-w-sm space-y-4">
+        {/* Settings Button - Top Center */}
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
+          >
+            <Settings size={20} className="text-gray-400" />
+          </button>
+        </div>
+
+        {/* Settings Menu */}
+        {showSettings && (
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Settings</h3>
+              <button
+                onClick={() => setShowSettings(false)}
+                className="w-8 h-8 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors"
+              >
+                <X size={16} className="text-gray-400" />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              {/* NSFW Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-xl">🔞</span>
+                  <span className="text-gray-300">NSFW Mode</span>
+                </div>
+                <button
+                  onClick={handleNSFWToggle}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    inputs.nsfwMode ? 'bg-red-600' : 'bg-gray-600'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                    inputs.nsfwMode ? 'translate-x-6' : 'translate-x-0.5'
+                  }`} />
+                </button>
+              </div>
+
+              {/* Drinking Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <span className="text-xl">🍺</span>
+                  <span className="text-gray-300">Drinking Mode</span>
+                </div>
+                <button
+                  onClick={handleDrinkingToggle}
+                  className={`w-12 h-6 rounded-full transition-colors ${
+                    inputs.drinkingMode ? 'bg-blue-600' : 'bg-gray-600'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
+                    inputs.drinkingMode ? 'translate-x-6' : 'translate-x-0.5'
+                  }`} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Players and Time Inputs - Side by Side */}
         <div className="grid grid-cols-2 gap-3">
           {/* Players Input */}
@@ -325,43 +389,6 @@ export default function GameFinder() {
                 max="120"
                 className="flex-1 text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded-lg border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-2"
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Toggle Buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* NSFW Mode Toggle */}
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">🔞</span>
-              <button
-                onClick={handleNSFWToggle}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  inputs.nsfwMode
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                NSFW
-              </button>
-            </div>
-          </div>
-
-          {/* Drinking Mode Toggle */}
-          <div className="bg-gray-800 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <span className="text-2xl">🍺</span>
-              <button
-                onClick={handleDrinkingToggle}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  inputs.drinkingMode
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}
-              >
-                Drinking
-              </button>
             </div>
           </div>
         </div>
