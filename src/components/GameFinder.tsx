@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Play, Heart, RotateCcw, Settings, X } from 'lucide-react';
+import { Play, Heart, RotateCcw, Settings, X, Home } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
 import { findGames, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
@@ -199,6 +199,13 @@ export default function GameFinder() {
     setSelectedGame(null);
   };
 
+  const handleGoHome = () => {
+    setCurrentView('input');
+    setCurrentGameIndex(0);
+    setSwipeActions([]);
+    setSelectedGame(null);
+  };
+
   if (currentView === 'detail' && selectedGame) {
     return <GameDetail game={selectedGame} onBack={handleBackToResults} />;
   }
@@ -263,16 +270,29 @@ export default function GameFinder() {
 
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex flex-col">
-        {/* Progress Bar */}
+        {/* Header with Home Button and Progress */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-gray-400">
-              {currentGameIndex + 1} of {gameMatches.length}
-            </span>
-            <span className="text-sm text-orange-400">
-              {Math.round(progress)}%
-            </span>
+            <button
+              onClick={handleGoHome}
+              className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors shadow-lg hover:shadow-xl"
+            >
+              <Home size={20} className="text-orange-400" />
+            </button>
+            
+            <div className="text-center">
+              <span className="text-sm text-gray-400">
+                {currentGameIndex + 1} of {gameMatches.length}
+              </span>
+            </div>
+            
+            <div className="w-10 h-10 flex items-center justify-center">
+              <span className="text-sm text-orange-400">
+                {Math.round(progress)}%
+              </span>
+            </div>
           </div>
+          
           <div className="w-full bg-gray-800 rounded-full h-2 shadow-inner">
             <div 
               className="bg-orange-600 h-2 rounded-full transition-all duration-300 shadow-sm"
