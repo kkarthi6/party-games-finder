@@ -341,22 +341,22 @@ export default function GameFinder() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 p-3 flex items-center justify-center">
-      <div className="w-full max-w-xs space-y-3">
+    <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
+      <div className="w-full max-w-xs space-y-4">
         {/* Settings Button - Top Center */}
         <div className="flex justify-center">
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className="w-8 h-8 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all shadow-md hover:shadow-lg"
+            className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all shadow-md hover:shadow-lg"
           >
-            <Settings size={16} className="text-gray-400" />
+            <Settings size={18} className="text-gray-400" />
           </button>
         </div>
 
         {/* Settings Menu */}
         {showSettings && (
-          <div className="bg-gray-800 rounded-lg p-3 border border-gray-700 shadow-xl">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white">Settings</h3>
               <button
                 onClick={() => setShowSettings(false)}
@@ -366,39 +366,39 @@ export default function GameFinder() {
               </button>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
               {/* NSFW Mode Toggle */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm">🔞</span>
-                  <span className="text-xs text-gray-300">NSFW</span>
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg">🔞</span>
+                  <span className="text-sm text-gray-300">NSFW Mode</span>
                 </div>
                 <button
                   onClick={handleNSFWToggle}
-                  className={`w-8 h-4 rounded-full transition-all shadow-inner ${
+                  className={`w-10 h-5 rounded-full transition-all shadow-inner ${
                     inputs.nsfwMode ? 'bg-red-600' : 'bg-gray-600'
                   }`}
                 >
-                  <div className={`w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${
-                    inputs.nsfwMode ? 'translate-x-4' : 'translate-x-0.5'
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
+                    inputs.nsfwMode ? 'translate-x-5' : 'translate-x-0.5'
                   }`} />
                 </button>
               </div>
 
               {/* Drinking Mode Toggle */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm">🍺</span>
-                  <span className="text-xs text-gray-300">Drinking</span>
+                <div className="flex items-center space-x-3">
+                  <span className="text-lg">🍺</span>
+                  <span className="text-sm text-gray-300">Drinking Mode</span>
                 </div>
                 <button
                   onClick={handleDrinkingToggle}
-                  className={`w-8 h-4 rounded-full transition-all shadow-inner ${
+                  className={`w-10 h-5 rounded-full transition-all shadow-inner ${
                     inputs.drinkingMode ? 'bg-blue-600' : 'bg-gray-600'
                   }`}
                 >
-                  <div className={`w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${
-                    inputs.drinkingMode ? 'translate-x-4' : 'translate-x-0.5'
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform shadow-sm ${
+                    inputs.drinkingMode ? 'translate-x-5' : 'translate-x-0.5'
                   }`} />
                 </button>
               </div>
@@ -406,12 +406,12 @@ export default function GameFinder() {
           </div>
         )}
 
-        {/* Players and Time Inputs - Side by Side */}
-        <div className="grid grid-cols-2 gap-2">
-          {/* Players Input */}
-          <div className="bg-gray-800 rounded-lg p-3 shadow-md">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg">👥</span>
+        {/* Players Input */}
+        <div className="bg-gray-800 rounded-lg p-4 shadow-md">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">👥</span>
+            <div className="flex-1">
+              <label className="block text-xs text-gray-400 mb-1">Players</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -421,15 +421,18 @@ export default function GameFinder() {
                 onBlur={handlePlayersBlur}
                 onFocus={(e) => e.target.select()}
                 placeholder="1-20"
-                className="flex-1 text-sm font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-1 px-1 shadow-inner"
+                className="w-full text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3 shadow-inner"
               />
             </div>
           </div>
+        </div>
 
-          {/* Duration Input */}
-          <div className="bg-gray-800 rounded-lg p-3 shadow-md">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg">🕐</span>
+        {/* Duration Input */}
+        <div className="bg-gray-800 rounded-lg p-4 shadow-md">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">🕐</span>
+            <div className="flex-1">
+              <label className="block text-xs text-gray-400 mb-1">Duration (minutes)</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -439,54 +442,55 @@ export default function GameFinder() {
                 onBlur={handleDurationBlur}
                 onFocus={(e) => e.target.select()}
                 placeholder="5-120"
-                className="flex-1 text-sm font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-1 px-1 shadow-inner"
+                className="w-full text-lg font-semibold text-orange-400 bg-gray-700 text-center rounded border border-gray-600 focus:border-orange-400 focus:outline-none py-2 px-3 shadow-inner"
               />
             </div>
           </div>
         </div>
 
-        {/* Items and Vibe Inputs - Side by Side */}
-        <div className="grid grid-cols-2 gap-2 relative">
-          {/* Items Input */}
-          <div className="bg-gray-800 rounded-lg p-3 shadow-md">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg flex-shrink-0">📋</span>
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={inputs.items}
-                  onChange={(e) => handleItemsChange(e.target.value)}
-                  onFocus={() => setShowItemSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
-                  placeholder="cards..."
-                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-xs shadow-inner"
-                />
-                
-                {showItemSuggestions && filteredSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-50 max-h-24 overflow-y-auto">
-                    {filteredSuggestions.map((item) => (
-                      <button
-                        key={item}
-                        onClick={() => handleItemSuggestionClick(item)}
-                        className="w-full text-left px-2 py-1 hover:bg-gray-600 transition-colors text-xs text-gray-200"
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+        {/* Items Input */}
+        <div className="bg-gray-800 rounded-lg p-4 shadow-md relative">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">📋</span>
+            <div className="flex-1">
+              <label className="block text-xs text-gray-400 mb-1">Items Available</label>
+              <input
+                type="text"
+                value={inputs.items}
+                onChange={(e) => handleItemsChange(e.target.value)}
+                onFocus={() => setShowItemSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
+                placeholder="Cards, Ball, Paper..."
+                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
+              />
+              
+              {showItemSuggestions && filteredSuggestions.length > 0 && (
+                <div className="absolute top-full left-4 right-4 mt-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-50 max-h-32 overflow-y-auto">
+                  {filteredSuggestions.map((item) => (
+                    <button
+                      key={item}
+                      onClick={() => handleItemSuggestionClick(item)}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-600 transition-colors text-sm text-gray-200"
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          {/* Vibe Dropdown */}
-          <div className="bg-gray-800 rounded-lg p-3 shadow-md">
-            <div className="flex items-center space-x-2">
-              <span className="text-lg flex-shrink-0">✨</span>
+        {/* Vibe Input */}
+        <div className="bg-gray-800 rounded-lg p-4 shadow-md">
+          <div className="flex items-center space-x-3">
+            <span className="text-2xl">✨</span>
+            <div className="flex-1">
+              <label className="block text-xs text-gray-400 mb-1">Vibe</label>
               <select
                 value={inputs.vibe}
                 onChange={(e) => handleVibeChange(e.target.value)}
-                className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-xs shadow-inner"
+                className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 text-gray-100 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-sm shadow-inner"
               >
                 {VIBE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -503,9 +507,9 @@ export default function GameFinder() {
           <button
             onClick={handleStartSwiping}
             disabled={gameMatches.length === 0}
-            className="w-12 h-12 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all shadow-lg hover:shadow-xl disabled:shadow-md"
+            className="w-16 h-16 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all shadow-lg hover:shadow-xl disabled:shadow-md"
           >
-            <Play size={18} />
+            <Play size={24} />
           </button>
         </div>
       </div>
