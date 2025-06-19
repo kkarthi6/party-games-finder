@@ -394,41 +394,43 @@ export default function GameFinder() {
         </div>
 
         {/* Items and Vibe Inputs - Side by Side */}
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 relative">
           {/* Items Input */}
-          <div className="bg-gray-800 rounded-lg p-3 relative shadow-md">
+          <div className="bg-gray-800 rounded-lg p-3 shadow-md">
             <div className="flex items-center space-x-2">
-              <span className="text-lg">📋</span>
-              <input
-                type="text"
-                value={inputs.items}
-                onChange={(e) => handleItemsChange(e.target.value)}
-                onFocus={() => setShowItemSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
-                placeholder="cards..."
-                className="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-xs shadow-inner"
-              />
-            </div>
-            
-            {showItemSuggestions && filteredSuggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-10 max-h-24 overflow-y-auto">
-                {filteredSuggestions.map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => handleItemSuggestionClick(item)}
-                    className="w-full text-left px-2 py-1 hover:bg-gray-600 transition-colors text-xs text-gray-200"
-                  >
-                    {item}
-                  </button>
-                ))}
+              <span className="text-lg flex-shrink-0">📋</span>
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={inputs.items}
+                  onChange={(e) => handleItemsChange(e.target.value)}
+                  onFocus={() => setShowItemSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowItemSuggestions(false), 200)}
+                  placeholder="cards..."
+                  className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-100 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400 text-xs shadow-inner"
+                />
+                
+                {showItemSuggestions && filteredSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-gray-700 border border-gray-600 rounded shadow-xl z-50 max-h-24 overflow-y-auto">
+                    {filteredSuggestions.map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => handleItemSuggestionClick(item)}
+                        className="w-full text-left px-2 py-1 hover:bg-gray-600 transition-colors text-xs text-gray-200"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Vibe Dropdown */}
           <div className="bg-gray-800 rounded-lg p-3 shadow-md">
             <div className="flex items-center space-x-2">
-              <span className="text-lg">✨</span>
+              <span className="text-lg flex-shrink-0">✨</span>
               <select
                 value={inputs.vibe}
                 onChange={(e) => handleVibeChange(e.target.value)}
