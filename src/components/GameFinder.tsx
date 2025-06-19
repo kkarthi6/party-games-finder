@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Play, Heart, RotateCcw, Settings, X, Home } from 'lucide-react';
+import { Play, Heart, RotateCcw, Settings, X, Home, Lightbulb } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction } from '../types';
-import { findGames, VIBE_OPTIONS } from '../utils/gameDatabase';
+import { findGames, getSuggestions, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
 import GameDetail from './GameDetail';
 
@@ -30,6 +30,7 @@ export default function GameFinder() {
   const [isDragging, setIsDragging] = useState(false);
 
   const gameMatches = useMemo(() => findGames(inputs), [inputs]);
+  const suggestions = useMemo(() => getSuggestions(inputs), [inputs]);
   const likedGames = useMemo(() => {
     const likedIds = swipeActions.filter(action => action.action === 'like').map(action => action.gameId);
     return gameMatches.filter(match => likedIds.includes(match.game.id));
@@ -466,6 +467,32 @@ export default function GameFinder() {
           </div>
         </div>
 
+        {/* Suggestions Section */}
+        {gameMatches.length === 0 && suggestions.length > 0 && (
+          <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg p-4">
+            <div className="flex items-center space-x-2 mb-3">
+              <Lightbulb size={16} className="text-yellow-400" />
+              <span className="text-sm font-semibold text-yellow-400">Suggestions</span>
+            </div>
+            <div className="space-y-2">
+              {suggestions.map((suggestion, index) => (
+                <p key={index} className="text-xs text-yellow-200 leading-relaxed">
+                  • {suggestion}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Game Count Indicator */}
+        {gameMatches.length > 0 && (
+          <div className="text-center">
+            <span className="text-sm text-gray-400">
+              {gameMatches.length} game{gameMatches.length !== 1 ? 's' : ''} found
+            </span>
+          </div>
+        )}
+
         {/* Play Button */}
         <div className="flex justify-center pt-2">
           <button
@@ -476,6 +503,15 @@ export default function GameFinder() {
             <Play size={24} />
           </button>
         </div>
+
+        {/* No Games Message */}
+        {gameMatches.length === 0 && (
+          <div className="text-center">
+            <div className="text-4xl mb-2">🎮</div>
+            <p className="text-gray-400 text-sm">No games match your criteria</p>
+            <p className="text-gray-500 text-xs mt-1">Try the suggestions above</p>
+          </div>
+        )}
       </div>
     </div>
   );

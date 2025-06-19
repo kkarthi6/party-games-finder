@@ -12,6 +12,58 @@ export const VIBE_OPTIONS = [
 
 export const GAMES: Game[] = [
   {
+    id: 'solitaire',
+    name: 'Solitaire',
+    emoji: '🃏',
+    players: { min: 1, max: 1 },
+    duration: 15,
+    items: ['cards'],
+    description: 'Classic single-player card game',
+    difficulty: 'easy',
+    category: 'mental',
+    vibe: 'relaxed',
+    instructions: 'Arrange cards in sequences and suits. Move cards between columns to reveal hidden cards and build foundation piles from Ace to King.'
+  },
+  {
+    id: 'sudoku',
+    name: 'Sudoku',
+    emoji: '🔢',
+    players: { min: 1, max: 1 },
+    duration: 25,
+    items: ['paper', 'pen'],
+    description: 'Fill the grid with numbers 1-9',
+    difficulty: 'medium',
+    category: 'mental',
+    vibe: 'strategic',
+    instructions: 'Fill a 9×9 grid so that each column, row, and 3×3 box contains all digits from 1 to 9. Use logic and deduction to solve!'
+  },
+  {
+    id: 'crossword',
+    name: 'Crossword Puzzle',
+    emoji: '📝',
+    players: { min: 1, max: 1 },
+    duration: 30,
+    items: ['paper', 'pen'],
+    description: 'Fill in words from clues',
+    difficulty: 'medium',
+    category: 'mental',
+    vibe: 'relaxed',
+    instructions: 'Use the clues to fill in words horizontally and vertically. Letters intersect to help solve other words. Great brain exercise!'
+  },
+  {
+    id: 'meditation',
+    name: 'Guided Meditation',
+    emoji: '🧘',
+    players: { min: 1, max: 1 },
+    duration: 20,
+    items: ['phone'],
+    description: 'Relax and center yourself',
+    difficulty: 'easy',
+    category: 'mental',
+    vibe: 'relaxed',
+    instructions: 'Find a quiet space, use a meditation app or video. Focus on breathing and let thoughts pass without judgment. Perfect for stress relief!'
+  },
+  {
     id: 'charades',
     name: 'Charades',
     emoji: '🎭',
@@ -36,19 +88,6 @@ export const GAMES: Game[] = [
     category: 'social',
     vibe: 'relaxed',
     instructions: 'Each player tells three statements about themselves - two true, one false. Others vote on which they think is the lie. Great for getting to know each other!'
-  },
-  {
-    id: 'solitaire',
-    name: 'Solitaire',
-    emoji: '🃏',
-    players: { min: 1, max: 1 },
-    duration: 15,
-    items: ['cards'],
-    description: 'Classic single-player card game',
-    difficulty: 'easy',
-    category: 'mental',
-    vibe: 'relaxed',
-    instructions: 'Arrange cards in sequences and suits. Move cards between columns to reveal hidden cards and build foundation piles from Ace to King.'
   },
   {
     id: 'card-poker',
@@ -310,45 +349,6 @@ export const GAMES: Game[] = [
     vibe: 'relaxed',
     instructions: 'First person says a word. Next person says a related word. Keep the chain going! If you hesitate too long or repeat, you\'re out.'
   },
-  {
-    id: 'sudoku',
-    name: 'Sudoku',
-    emoji: '🔢',
-    players: { min: 1, max: 1 },
-    duration: 25,
-    items: ['paper', 'pen'],
-    description: 'Fill the grid with numbers 1-9',
-    difficulty: 'medium',
-    category: 'mental',
-    vibe: 'strategic',
-    instructions: 'Fill a 9×9 grid so that each column, row, and 3×3 box contains all digits from 1 to 9. Use logic and deduction to solve!'
-  },
-  {
-    id: 'crossword',
-    name: 'Crossword Puzzle',
-    emoji: '📝',
-    players: { min: 1, max: 1 },
-    duration: 30,
-    items: ['paper', 'pen'],
-    description: 'Fill in words from clues',
-    difficulty: 'medium',
-    category: 'mental',
-    vibe: 'relaxed',
-    instructions: 'Use the clues to fill in words horizontally and vertically. Letters intersect to help solve other words. Great brain exercise!'
-  },
-  {
-    id: 'meditation',
-    name: 'Guided Meditation',
-    emoji: '🧘',
-    players: { min: 1, max: 1 },
-    duration: 20,
-    items: ['phone'],
-    description: 'Relax and center yourself',
-    difficulty: 'easy',
-    category: 'mental',
-    vibe: 'relaxed',
-    instructions: 'Find a quiet space, use a meditation app or video. Focus on breathing and let thoughts pass without judgment. Perfect for stress relief!'
-  },
   // Drinking Games
   {
     id: 'beer-pong',
@@ -528,108 +528,103 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
   const matches: GameMatch[] = [];
   
   for (const game of GAMES) {
-    // Filter based on mode preferences
+    // STRICT FILTERING - Must pass ALL criteria
+    
+    // 1. Mode filtering (STRICT)
     if (game.isNSFW && !nsfwMode) continue;
     if (game.isDrinking && !drinkingMode) continue;
+    
+    // 2. Player count filtering (STRICT - treat input as upper bound)
+    // Only include games that can be played with the available players or fewer
+    if (game.players.min > players) continue;
+    
+    // 3. Vibe filtering (STRICT if specified)
+    if (vibe && game.vibe && game.vibe !== vibe) continue;
     
     let score = 0;
     const reasons: string[] = [];
     
-    // CRITICAL: Player count matching - treat input as UPPER BOUND (50 points max)
-    // Only recommend games that can be played with the available number of players or fewer
-    if (game.players.min <= players && game.players.max <= players) {
-      // Perfect: Game can be played with exactly the available players or fewer
+    // SCORING SYSTEM (for ranking valid games)
+    
+    // Player count scoring (50 points max)
+    if (game.players.max <= players) {
       if (game.players.max === players) {
-        score += 50; // Exact match for max players
-        reasons.push('Perfect player count match');
+        score += 50; // Perfect match - uses all available players
+        reasons.push('Uses all available players');
       } else if (game.players.min === players) {
-        score += 45; // Exact match for min players
-        reasons.push('Exact minimum players needed');
+        score += 45; // Exact minimum match
+        reasons.push('Perfect minimum players');
       } else {
-        score += 40; // Game works within the available player range
-        reasons.push('Works with available players');
+        score += 40; // Works well within range
+        reasons.push('Good player fit');
       }
-    } else if (game.players.min <= players && game.players.max > players) {
-      // Game's minimum is achievable, but maximum exceeds available players
-      // This is still playable, just not optimal
-      score += 25;
-      reasons.push('Playable with current players');
     } else {
-      // Game requires more players than available - skip this game
-      continue;
-    }
-    
-    // Duration matching (30 points max)
-    const durationRatio = Math.min(duration, game.duration) / Math.max(duration, game.duration);
-    if (duration >= game.duration) {
-      score += 30;
-      reasons.push('Fits perfectly in time');
-    } else if (durationRatio >= 0.8) {
+      // Game's max exceeds available players but min is achievable
       score += 25;
-      reasons.push('Almost fits in time');
-    } else if (durationRatio >= 0.6) {
-      score += 15;
-      reasons.push('Might fit with quick play');
-    } else if (durationRatio >= 0.4) {
-      score += 5;
-      reasons.push('Tight on time');
+      reasons.push('Playable with current group');
     }
     
-    // Vibe matching (20 points max)
-    if (vibe && game.vibe) {
-      if (game.vibe === vibe) {
-        score += 20;
-        reasons.push('Perfect vibe match');
+    // Duration scoring (30 points max)
+    if (game.duration <= duration) {
+      const ratio = game.duration / duration;
+      if (ratio >= 0.8) {
+        score += 30; // Uses most of the time well
+        reasons.push('Perfect time fit');
+      } else if (ratio >= 0.5) {
+        score += 25; // Good time usage
+        reasons.push('Good time fit');
       } else {
-        // Partial vibe compatibility
-        const vibeCompatibility = getVibeCompatibility(vibe, game.vibe);
-        score += vibeCompatibility;
-        if (vibeCompatibility > 0) {
-          reasons.push('Compatible vibe');
-        }
+        score += 15; // Quick game
+        reasons.push('Quick game');
       }
-    } else if (!vibe) {
-      score += 5; // Small bonus for no vibe preference
+    } else {
+      // Game is longer than desired time
+      const overageRatio = duration / game.duration;
+      if (overageRatio >= 0.8) {
+        score += 10; // Slightly over but manageable
+        reasons.push('Slightly longer than preferred');
+      } else if (overageRatio >= 0.6) {
+        score += 5; // Noticeably over
+        reasons.push('Longer than preferred');
+      }
+      // Games much longer than desired get no duration points
     }
     
-    // Single player bonus (for 1 player input)
+    // Vibe scoring (20 points max)
+    if (vibe && game.vibe === vibe) {
+      score += 20;
+      reasons.push('Perfect vibe match');
+    } else if (!vibe) {
+      score += 10; // Bonus for no vibe restriction
+    }
+    
+    // Context bonuses (10 points max total)
+    
+    // Single player bonus
     if (players === 1 && game.players.min === 1 && game.players.max === 1) {
-      score += 15;
+      score += 10;
       reasons.push('Perfect for solo play');
     }
     
     // Small group optimization (2-4 players)
-    if (players >= 2 && players <= 4) {
-      if (game.players.max <= 6 && game.difficulty === 'easy') {
-        score += 8;
-        reasons.push('Great for small groups');
-      }
+    if (players >= 2 && players <= 4 && game.players.max <= 6) {
+      score += 5;
+      reasons.push('Great for small groups');
     }
     
     // Large group optimization (8+ players)
-    if (players >= 8) {
-      if (game.category === 'social' || game.category === 'physical') {
-        score += 10;
-        reasons.push('Excellent for large groups');
-      }
+    if (players >= 8 && (game.category === 'social' || game.category === 'physical')) {
+      score += 5;
+      reasons.push('Excellent for large groups');
     }
     
-    // Category bonuses based on context
-    if (duration <= 15 && game.category === 'physical') {
-      score += 5;
-      reasons.push('Quick physical activity');
-    } else if (duration >= 45 && game.category === 'mental') {
-      score += 5;
-      reasons.push('Good for longer sessions');
-    }
-    
-    // Popular game bonus (small boost)
+    // Popular game bonus
     if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever', 'solitaire'].includes(game.id)) {
       score += 3;
     }
     
-    // Only include games with a reasonable score
-    if (score >= 20) {
+    // Only include games with reasonable scores
+    if (score >= 15) {
       matches.push({ game, score, reasons });
     }
   }
@@ -637,37 +632,82 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
   return matches.sort((a, b) => b.score - a.score);
 }
 
-function getVibeCompatibility(userVibe: string, gameVibe: string): number {
-  const compatibility: Record<string, Record<string, number>> = {
-    'competitive': {
-      'strategic': 12,
-      'energetic': 10,
-      'silly': 4
-    },
-    'relaxed': {
-      'intimate': 12,
-      'social': 10,
-      'silly': 6
-    },
-    'energetic': {
-      'competitive': 10,
-      'silly': 12,
-      'physical': 11
-    },
-    'intimate': {
-      'relaxed': 12,
-      'social': 8
-    },
-    'silly': {
-      'energetic': 12,
-      'relaxed': 6,
-      'competitive': 4
-    },
-    'strategic': {
-      'competitive': 12,
-      'mental': 10
-    }
-  };
+export function getSuggestions(inputs: GameFinderInputs): string[] {
+  const { players, duration, nsfwMode, drinkingMode, vibe } = inputs;
+  const suggestions: string[] = [];
   
-  return compatibility[userVibe]?.[gameVibe] || 0;
+  // Check what's limiting the results
+  const allGames = GAMES;
+  
+  // Check mode restrictions
+  const modeFilteredGames = allGames.filter(game => {
+    if (game.isNSFW && !nsfwMode) return false;
+    if (game.isDrinking && !drinkingMode) return false;
+    return true;
+  });
+  
+  // Check player restrictions
+  const playerFilteredGames = modeFilteredGames.filter(game => 
+    game.players.min <= players
+  );
+  
+  // Check vibe restrictions
+  const vibeFilteredGames = playerFilteredGames.filter(game =>
+    !vibe || !game.vibe || game.vibe === vibe
+  );
+  
+  // Generate suggestions based on what's limiting results
+  
+  if (modeFilteredGames.length === 0) {
+    if (!nsfwMode && !drinkingMode) {
+      suggestions.push("Try enabling NSFW or Drinking mode for more game options");
+    }
+  } else if (playerFilteredGames.length === 0) {
+    // Player count is the issue
+    const minPlayersNeeded = Math.min(...modeFilteredGames.map(g => g.players.min));
+    if (minPlayersNeeded > players) {
+      suggestions.push(`Try increasing players to at least ${minPlayersNeeded} for more games`);
+    }
+  } else if (vibeFilteredGames.length === 0) {
+    // Vibe is too restrictive
+    suggestions.push("Try selecting 'Any Vibe' for more game options");
+    
+    // Suggest compatible vibes
+    const availableVibes = new Set(playerFilteredGames.map(g => g.vibe).filter(Boolean));
+    if (availableVibes.size > 0) {
+      const vibeList = Array.from(availableVibes).slice(0, 3).join(', ');
+      suggestions.push(`Available vibes for your group: ${vibeList}`);
+    }
+  } else if (vibeFilteredGames.length < 5) {
+    // Few results - suggest expanding criteria
+    if (duration < 20) {
+      suggestions.push("Try increasing duration to 20+ minutes for more game options");
+    }
+    
+    if (players < 4) {
+      suggestions.push("Try adding more players for better game variety");
+    }
+    
+    if (vibe) {
+      suggestions.push("Try 'Any Vibe' to see more games");
+    }
+  }
+  
+  // Specific suggestions based on player count
+  if (players === 1) {
+    suggestions.push("Perfect for solo games! Try puzzle games or meditation");
+  } else if (players === 2) {
+    suggestions.push("Great for card games and strategic challenges");
+  } else if (players >= 8) {
+    suggestions.push("Large groups are perfect for party games and physical activities");
+  }
+  
+  // Duration-based suggestions
+  if (duration <= 10) {
+    suggestions.push("Short sessions work best with quick physical games");
+  } else if (duration >= 60) {
+    suggestions.push("Long sessions are perfect for strategic games and tournaments");
+  }
+  
+  return suggestions.slice(0, 3); // Limit to 3 most relevant suggestions
 }
