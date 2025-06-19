@@ -12,12 +12,16 @@ export interface Game {
   difficulty: 'easy' | 'medium' | 'hard';
   category: 'physical' | 'mental' | 'creative' | 'social';
   instructions?: string;
+  isNSFW?: boolean;
+  isDrinking?: boolean;
 }
 
 export interface GameFinderInputs {
   players: number;
   duration: number;
   items: string;
+  nsfwMode: boolean;
+  drinkingMode: boolean;
 }
 
 export interface GameMatch {

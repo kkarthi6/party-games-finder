@@ -9,7 +9,9 @@ export default function GameFinder() {
   const [inputs, setInputs] = useState<GameFinderInputs>({
     players: 4,
     duration: 30,
-    items: ''
+    items: '',
+    nsfwMode: false,
+    drinkingMode: false
   });
   
   const [showItemSuggestions, setShowItemSuggestions] = useState(false);
@@ -47,6 +49,14 @@ export default function GameFinder() {
 
   const handleItemsChange = (value: string) => {
     setInputs(prev => ({ ...prev, items: value }));
+  };
+
+  const handleNSFWToggle = () => {
+    setInputs(prev => ({ ...prev, nsfwMode: !prev.nsfwMode }));
+  };
+
+  const handleDrinkingToggle = () => {
+    setInputs(prev => ({ ...prev, drinkingMode: !prev.drinkingMode }));
   };
 
   const handleItemSuggestionClick = (item: string) => {
@@ -349,6 +359,43 @@ export default function GameFinder() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Toggle Buttons */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* NSFW Mode Toggle */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-center mb-2">
+              <span className="text-2xl">🔞</span>
+            </div>
+            <button
+              onClick={handleNSFWToggle}
+              className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                inputs.nsfwMode
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              NSFW Mode
+            </button>
+          </div>
+
+          {/* Drinking Mode Toggle */}
+          <div className="bg-gray-800 rounded-lg p-4">
+            <div className="text-center mb-2">
+              <span className="text-2xl">🍺</span>
+            </div>
+            <button
+              onClick={handleDrinkingToggle}
+              className={`w-full py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                inputs.drinkingMode
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              Drinking Games
+            </button>
+          </div>
         </div>
 
         {/* Play Button */}

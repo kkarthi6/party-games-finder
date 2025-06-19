@@ -272,16 +272,179 @@ export const GAMES: Game[] = [
     difficulty: 'easy',
     category: 'mental',
     instructions: 'First person says a word. Next person says a related word. Keep the chain going! If you hesitate too long or repeat, you\'re out.'
+  },
+  // Drinking Games
+  {
+    id: 'beer-pong',
+    name: 'Beer Pong',
+    emoji: '🍺',
+    players: { min: 4, max: 8 },
+    duration: 30,
+    items: ['cups', 'ball', 'drinks'],
+    description: 'Throw balls into cups, opponents drink',
+    difficulty: 'medium',
+    category: 'physical',
+    isDrinking: true,
+    instructions: 'Set up cups in triangle formation. Take turns throwing ping pong balls into opponent\'s cups. When you make it, they drink and remove the cup!'
+  },
+  {
+    id: 'kings-cup',
+    name: 'Kings Cup',
+    emoji: '👑',
+    players: { min: 3, max: 10 },
+    duration: 45,
+    items: ['cards', 'drinks', 'cups'],
+    description: 'Draw cards, follow the rules',
+    difficulty: 'easy',
+    category: 'social',
+    isDrinking: true,
+    instructions: 'Place cards around a cup. Draw cards and follow rules: Ace=waterfall, King=make a rule, Queen=questions, Jack=never have I ever, etc.'
+  },
+  {
+    id: 'flip-cup',
+    name: 'Flip Cup',
+    emoji: '🥤',
+    players: { min: 6, max: 16 },
+    duration: 20,
+    items: ['cups', 'drinks'],
+    description: 'Team relay race with cup flipping',
+    difficulty: 'medium',
+    category: 'physical',
+    isDrinking: true,
+    instructions: 'Teams line up, drink from cup, then flip it upside down by flicking the rim. Next teammate goes when you succeed. First team to finish wins!'
+  },
+  {
+    id: 'quarters',
+    name: 'Quarters',
+    emoji: '🪙',
+    players: { min: 3, max: 8 },
+    duration: 25,
+    items: ['coins', 'cups', 'drinks'],
+    description: 'Bounce quarters into cups',
+    difficulty: 'medium',
+    category: 'physical',
+    isDrinking: true,
+    instructions: 'Bounce a quarter off the table into a cup. If you make it, choose someone to drink. Miss and pass the quarter to the next player.'
+  },
+  {
+    id: 'power-hour',
+    name: 'Power Hour',
+    emoji: '⏰',
+    players: { min: 2, max: 20 },
+    duration: 60,
+    items: ['timer', 'drinks', 'music'],
+    description: 'Drink every minute for an hour',
+    difficulty: 'hard',
+    category: 'social',
+    isDrinking: true,
+    instructions: 'Take a drink every minute for 60 minutes. Play music and change songs each minute to keep track. Pace yourself!'
+  },
+  {
+    id: 'drunk-jenga',
+    name: 'Drunk Jenga',
+    emoji: '🧱',
+    players: { min: 2, max: 8 },
+    duration: 30,
+    items: ['jenga', 'drinks', 'markers'],
+    description: 'Jenga with drinking rules on blocks',
+    difficulty: 'medium',
+    category: 'physical',
+    isDrinking: true,
+    instructions: 'Write rules on Jenga blocks. When you pull a block, follow its rule. Examples: "Take 2 drinks", "Everyone drinks", "Make a rule".'
+  },
+  // NSFW Games
+  {
+    id: 'truth-or-dare-adult',
+    name: 'Adult Truth or Dare',
+    emoji: '🔥',
+    players: { min: 3, max: 12 },
+    duration: 45,
+    items: ['nothing'],
+    description: 'Spicy version of the classic game',
+    difficulty: 'medium',
+    category: 'social',
+    isNSFW: true,
+    instructions: 'Take turns choosing truth or dare. Questions and dares get progressively more intimate and daring. Set boundaries beforehand!'
+  },
+  {
+    id: 'strip-poker',
+    name: 'Strip Poker',
+    emoji: '🃏',
+    players: { min: 3, max: 8 },
+    duration: 60,
+    items: ['cards'],
+    description: 'Poker with clothing stakes',
+    difficulty: 'medium',
+    category: 'mental',
+    isNSFW: true,
+    instructions: 'Play poker, but instead of money, losers remove clothing items. Set clear boundaries and comfort levels before starting.'
+  },
+  {
+    id: 'body-shots',
+    name: 'Body Shots',
+    emoji: '💋',
+    players: { min: 2, max: 8 },
+    duration: 20,
+    items: ['drinks', 'salt'],
+    description: 'Take shots off each other',
+    difficulty: 'easy',
+    category: 'physical',
+    isNSFW: true,
+    isDrinking: true,
+    instructions: 'Take turns doing shots off each other\'s bodies. Use salt, lime, and tequila. Only with consenting adults!'
+  },
+  {
+    id: 'spin-the-bottle-adult',
+    name: 'Adult Spin the Bottle',
+    emoji: '🍼',
+    players: { min: 4, max: 12 },
+    duration: 30,
+    items: ['bottle'],
+    description: 'Spin bottle for intimate challenges',
+    difficulty: 'easy',
+    category: 'social',
+    isNSFW: true,
+    instructions: 'Sit in a circle, spin bottle. When it points to someone, they get a challenge or dare. Make it as spicy as the group is comfortable with.'
+  },
+  {
+    id: 'sexy-charades',
+    name: 'Sexy Charades',
+    emoji: '🎭',
+    players: { min: 4, max: 12 },
+    duration: 30,
+    items: ['paper', 'pen'],
+    description: 'Act out adult-themed words',
+    difficulty: 'medium',
+    category: 'physical',
+    isNSFW: true,
+    instructions: 'Like regular charades but with adult themes and positions. Write down spicy words or scenarios to act out.'
+  },
+  {
+    id: 'intimate-questions',
+    name: 'Intimate Questions',
+    emoji: '💕',
+    players: { min: 2, max: 8 },
+    duration: 40,
+    items: ['paper', 'pen'],
+    description: 'Deep personal and intimate questions',
+    difficulty: 'easy',
+    category: 'social',
+    isNSFW: true,
+    instructions: 'Take turns asking increasingly intimate questions. Great for couples or close friends wanting to learn more about each other.'
   }
 ];
 
 export function findGames(inputs: GameFinderInputs): GameMatch[] {
-  const { players, duration, items } = inputs;
+  const { players, duration, items, nsfwMode, drinkingMode } = inputs;
   const itemList = items.toLowerCase().split(',').map(item => item.trim()).filter(item => item);
   
   const matches: GameMatch[] = [];
   
   for (const game of GAMES) {
+    // Filter based on mode preferences
+    if (game.isNSFW && !nsfwMode) continue;
+    if (game.isDrinking && !drinkingMode) continue;
+    
     let score = 0;
     const reasons: string[] = [];
     
