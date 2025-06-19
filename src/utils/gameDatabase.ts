@@ -38,6 +38,19 @@ export const GAMES: Game[] = [
     instructions: 'Each player tells three statements about themselves - two true, one false. Others vote on which they think is the lie. Great for getting to know each other!'
   },
   {
+    id: 'solitaire',
+    name: 'Solitaire',
+    emoji: '🃏',
+    players: { min: 1, max: 1 },
+    duration: 15,
+    items: ['cards'],
+    description: 'Classic single-player card game',
+    difficulty: 'easy',
+    category: 'mental',
+    vibe: 'relaxed',
+    instructions: 'Arrange cards in sequences and suits. Move cards between columns to reveal hidden cards and build foundation piles from Ace to King.'
+  },
+  {
     id: 'card-poker',
     name: 'Poker',
     emoji: '🃏',
@@ -297,6 +310,45 @@ export const GAMES: Game[] = [
     vibe: 'relaxed',
     instructions: 'First person says a word. Next person says a related word. Keep the chain going! If you hesitate too long or repeat, you\'re out.'
   },
+  {
+    id: 'sudoku',
+    name: 'Sudoku',
+    emoji: '🔢',
+    players: { min: 1, max: 1 },
+    duration: 25,
+    items: ['paper', 'pen'],
+    description: 'Fill the grid with numbers 1-9',
+    difficulty: 'medium',
+    category: 'mental',
+    vibe: 'strategic',
+    instructions: 'Fill a 9×9 grid so that each column, row, and 3×3 box contains all digits from 1 to 9. Use logic and deduction to solve!'
+  },
+  {
+    id: 'crossword',
+    name: 'Crossword Puzzle',
+    emoji: '📝',
+    players: { min: 1, max: 1 },
+    duration: 30,
+    items: ['paper', 'pen'],
+    description: 'Fill in words from clues',
+    difficulty: 'medium',
+    category: 'mental',
+    vibe: 'relaxed',
+    instructions: 'Use the clues to fill in words horizontally and vertically. Letters intersect to help solve other words. Great brain exercise!'
+  },
+  {
+    id: 'meditation',
+    name: 'Guided Meditation',
+    emoji: '🧘',
+    players: { min: 1, max: 1 },
+    duration: 20,
+    items: ['phone'],
+    description: 'Relax and center yourself',
+    difficulty: 'easy',
+    category: 'mental',
+    vibe: 'relaxed',
+    instructions: 'Find a quiet space, use a meditation app or video. Focus on breathing and let thoughts pass without judgment. Perfect for stress relief!'
+  },
   // Drinking Games
   {
     id: 'beer-pong',
@@ -483,25 +535,28 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
     let score = 0;
     const reasons: string[] = [];
     
-    // Player count matching (highest priority - 40 points max)
-    if (players >= game.players.min && players <= game.players.max) {
-      score += 40;
-      reasons.push('Perfect player count');
-    } else {
-      const minDiff = Math.abs(players - game.players.min);
-      const maxDiff = Math.abs(players - game.players.max);
-      const closestDiff = Math.min(minDiff, maxDiff);
-      
-      if (closestDiff <= 1) {
-        score += 30;
-        reasons.push('Very close to player count');
-      } else if (closestDiff <= 2) {
-        score += 20;
-        reasons.push('Close to player count');
-      } else if (closestDiff <= 3) {
-        score += 10;
-        reasons.push('Somewhat close to player count');
+    // CRITICAL: Player count matching - treat input as UPPER BOUND (50 points max)
+    // Only recommend games that can be played with the available number of players or fewer
+    if (game.players.min <= players && game.players.max <= players) {
+      // Perfect: Game can be played with exactly the available players or fewer
+      if (game.players.max === players) {
+        score += 50; // Exact match for max players
+        reasons.push('Perfect player count match');
+      } else if (game.players.min === players) {
+        score += 45; // Exact match for min players
+        reasons.push('Exact minimum players needed');
+      } else {
+        score += 40; // Game works within the available player range
+        reasons.push('Works with available players');
       }
+    } else if (game.players.min <= players && game.players.max > players) {
+      // Game's minimum is achievable, but maximum exceeds available players
+      // This is still playable, just not optimal
+      score += 25;
+      reasons.push('Playable with current players');
+    } else {
+      // Game requires more players than available - skip this game
+      continue;
     }
     
     // Duration matching (30 points max)
@@ -520,10 +575,10 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
       reasons.push('Tight on time');
     }
     
-    // Vibe matching (30 points max)
+    // Vibe matching (20 points max)
     if (vibe && game.vibe) {
       if (game.vibe === vibe) {
-        score += 30;
+        score += 20;
         reasons.push('Perfect vibe match');
       } else {
         // Partial vibe compatibility
@@ -534,40 +589,47 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
         }
       }
     } else if (!vibe) {
-      score += 10; // Bonus for no vibe preference
+      score += 5; // Small bonus for no vibe preference
     }
     
-    // Difficulty bonus based on group size (10 points max)
-    if (players <= 4 && game.difficulty === 'easy') {
-      score += 8;
-      reasons.push('Good for small groups');
-    } else if (players >= 8 && game.difficulty === 'easy') {
-      score += 6;
-      reasons.push('Easy for large groups');
-    } else if (players >= 6 && players <= 10 && game.difficulty === 'medium') {
-      score += 7;
-      reasons.push('Good complexity for group size');
+    // Single player bonus (for 1 player input)
+    if (players === 1 && game.players.min === 1 && game.players.max === 1) {
+      score += 15;
+      reasons.push('Perfect for solo play');
     }
     
-    // Category bonuses based on context (10 points max)
+    // Small group optimization (2-4 players)
+    if (players >= 2 && players <= 4) {
+      if (game.players.max <= 6 && game.difficulty === 'easy') {
+        score += 8;
+        reasons.push('Great for small groups');
+      }
+    }
+    
+    // Large group optimization (8+ players)
+    if (players >= 8) {
+      if (game.category === 'social' || game.category === 'physical') {
+        score += 10;
+        reasons.push('Excellent for large groups');
+      }
+    }
+    
+    // Category bonuses based on context
     if (duration <= 15 && game.category === 'physical') {
-      score += 6;
+      score += 5;
       reasons.push('Quick physical activity');
     } else if (duration >= 45 && game.category === 'mental') {
-      score += 6;
+      score += 5;
       reasons.push('Good for longer sessions');
-    } else if (players >= 10 && game.category === 'social') {
-      score += 8;
-      reasons.push('Great for large social groups');
     }
     
     // Popular game bonus (small boost)
-    if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever'].includes(game.id)) {
-      score += 5;
+    if (['charades', 'two-truths-lie', 'twenty-questions', 'never-have-i-ever', 'solitaire'].includes(game.id)) {
+      score += 3;
     }
     
     // Only include games with a reasonable score
-    if (score >= 15) {
+    if (score >= 20) {
       matches.push({ game, score, reasons });
     }
   }
@@ -578,32 +640,32 @@ export function findGames(inputs: GameFinderInputs): GameMatch[] {
 function getVibeCompatibility(userVibe: string, gameVibe: string): number {
   const compatibility: Record<string, Record<string, number>> = {
     'competitive': {
-      'strategic': 15,
-      'energetic': 12,
-      'silly': 6
+      'strategic': 12,
+      'energetic': 10,
+      'silly': 4
     },
     'relaxed': {
-      'intimate': 15,
-      'social': 12,
-      'silly': 8
+      'intimate': 12,
+      'social': 10,
+      'silly': 6
     },
     'energetic': {
-      'competitive': 12,
-      'silly': 15,
-      'physical': 14
+      'competitive': 10,
+      'silly': 12,
+      'physical': 11
     },
     'intimate': {
-      'relaxed': 15,
-      'social': 10
+      'relaxed': 12,
+      'social': 8
     },
     'silly': {
-      'energetic': 15,
-      'relaxed': 8,
-      'competitive': 6
+      'energetic': 12,
+      'relaxed': 6,
+      'competitive': 4
     },
     'strategic': {
-      'competitive': 15,
-      'mental': 12
+      'competitive': 12,
+      'mental': 10
     }
   };
   
