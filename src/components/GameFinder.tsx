@@ -1,11 +1,16 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { Play, Heart, RotateCcw, Settings, X, Home, Lightbulb } from 'lucide-react';
-import { GameFinderInputs, Game, SwipeAction } from '../types';
+import { Play, Heart, RotateCcw, Settings, X, Home, Lightbulb, LogOut, User as UserIcon } from 'lucide-react';
+import { GameFinderInputs, Game, SwipeAction, User } from '../types';
 import { findGames, getSuggestions, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
 import GameDetail from './GameDetail';
 
-export default function GameFinder() {
+interface GameFinderProps {
+  user: User;
+  onLogout: () => void;
+}
+
+export default function GameFinder({ user, onLogout }: GameFinderProps) {
   const [inputs, setInputs] = useState<GameFinderInputs>({
     players: 4,
     duration: 30,
@@ -17,6 +22,7 @@ export default function GameFinder() {
   const [playersDisplay, setPlayersDisplay] = useState('4');
   const [durationDisplay, setDurationDisplay] = useState('30');
   const [showSettings, setShowSettings] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail'>('input');
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
   const [swipeActions, setSwipeActions] = useState<SwipeAction[]>([]);
@@ -377,7 +383,7 @@ export default function GameFinder() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-4 flex items-center justify-center">
       <div className="w-full max-w-xs mx-auto space-y-4">
-        <div className="flex justify-center">
+        <div className="flex justify-between items-center">
           <button
             onClick={() => setShowSettings(!showSettings)}
             className="w-10 h-10 bg-gray-800 hover:bg-gray-700 rounded-full flex items-center justify-center transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
@@ -386,6 +392,33 @@ export default function GameFinder() {
           >
             <Settings size={18} className="text-gray-400" />
           </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 rounded-full px-3 py-2 transition-all duration-200 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50"
+              aria-label="User menu"
+            >
+              <UserIcon size={16} className="text-gray-400" />
+              <span className="text-sm text-gray-300 truncate max-w-20">{user.name}</span>
+            </button>
+
+            {showUserMenu && (
+              <div className="absolute right-0 top-full mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10 min-w-48">
+                <div className="p-3 border-b border-gray-700">
+                  <p className="text-sm font-medium text-white">{user.name}</p>
+                  <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                </div>
+                <button
+                  onClick={onLogout}
+                  className="w-full flex items-center space-x-2 px-3 py-2 text-left text-sm text-gray-300 hover:bg-gray-700 transition-colors duration-200"
+                >
+                  <LogOut size={16} />
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {showSettings && (
@@ -556,6 +589,14 @@ export default function GameFinder() {
           </div>
         )}
       </div>
+
+      {/* Click outside to close user menu */}
+      {showUserMenu && (
+        <div 
+          className="fixed inset-0 z-0" 
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
     </div>
   );
 }

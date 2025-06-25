@@ -35,3 +35,8 @@ export interface SwipeAction {
   gameId: string;
   action: 'like' | 'pass';
 }
+
+export interface User {
+  email: string;
+  name: string;
+}
