@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react';
-import { Play, Heart, RotateCcw, Settings, X, Home, Lightbulb, LogOut, User as UserIcon } from 'lucide-react';
+import { Play, Heart, RotateCcw, Settings, X, Home, Lightbulb, LogOut, User as UserIcon, Sparkles, Mail } from 'lucide-react';
 import { GameFinderInputs, Game, SwipeAction, User } from '../types';
 import { findGames, getSuggestions, VIBE_OPTIONS } from '../utils/gameDatabase';
 import SwipeCard from './SwipeCard';
 import GameDetail from './GameDetail';
+import AIGameGenerator from './AIGameGenerator';
 
 interface GameFinderProps {
   user: User;
@@ -23,7 +24,7 @@ export default function GameFinder({ user, onLogout }: GameFinderProps) {
   const [durationDisplay, setDurationDisplay] = useState('30');
   const [showSettings, setShowSettings] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail'>('input');
+  const [currentView, setCurrentView] = useState<'input' | 'swipe' | 'results' | 'detail' | 'ai-generator'>('input');
   const [currentGameIndex, setCurrentGameIndex] = useState(0);
   const [swipeActions, setSwipeActions] = useState<SwipeAction[]>([]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
@@ -137,6 +138,10 @@ export default function GameFinder({ user, onLogout }: GameFinderProps) {
     }
   }, [gameMatches.length]);
 
+  const handleOpenAIGenerator = useCallback(() => {
+    setCurrentView('ai-generator');
+  }, []);
+
   const handleSwipe = useCallback((direction: 'left' | 'right') => {
     if (currentGameIndex >= gameMatches.length) return;
 
@@ -223,6 +228,10 @@ export default function GameFinder({ user, onLogout }: GameFinderProps) {
     setCurrentView('results');
   }, []);
 
+  const handleBackToInput = useCallback(() => {
+    setCurrentView('input');
+  }, []);
+
   const handleRestart = useCallback(() => {
     setCurrentView('input');
     setCurrentGameIndex(0);
@@ -236,6 +245,16 @@ export default function GameFinder({ user, onLogout }: GameFinderProps) {
     setSwipeActions([]);
     setSelectedGame(null);
   }, []);
+
+  if (currentView === 'ai-generator') {
+    return (
+      <AIGameGenerator 
+        onBack={handleBackToInput}
+        initialPlayers={inputs.players}
+        initialDuration={inputs.duration}
+      />
+    );
+  }
 
   if (currentView === 'detail' && selectedGame) {
     return <GameDetail game={selectedGame} onBack={handleBackToResults} />;
@@ -606,7 +625,15 @@ export default function GameFinder({ user, onLogout }: GameFinderProps) {
           </div>
         )}
 
-        <div className="flex justify-center pt-2">
+        <div className="flex justify-center items-center space-x-4 pt-2">
+          <button
+            onClick={handleOpenAIGenerator}
+            className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-50"
+            aria-label="Generate custom game with AI"
+          >
+            <Sparkles size={24} />
+          </button>
+
           <button
             onClick={handleStartSwiping}
             disabled={gameMatches.length === 0 || isLoading}
@@ -625,7 +652,7 @@ export default function GameFinder({ user, onLogout }: GameFinderProps) {
           <div className="text-center">
             <div className="text-4xl mb-2" role="img" aria-label="No games">🎮</div>
             <p className="text-gray-400 text-sm">No games match your criteria</p>
-            <p className="text-gray-500 text-xs mt-1">Try the suggestions above</p>
+            <p className="text-gray-500 text-xs mt-1">Try the suggestions above or generate a custom game</p>
           </div>
         )}
       </div>
