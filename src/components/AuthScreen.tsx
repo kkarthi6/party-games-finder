@@ -1,14 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Gamepad2, Sparkles } from 'lucide-react';
+import { googleAuth } from '../utils/googleAuth';
 
 interface AuthScreenProps {
-  onLogin: (user: { email: string; name: string }) => void;
+  onLogin: (user: { email: string; name: string; picture?: string; authMethod?: 'email' | 'google' }) => void;
 }
 
 export default function AuthScreen({ onLogin }: AuthScreenProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,6 +18,27 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Initialize Google Sign-In button
+    if (googleButtonRef.current) {
+      googleAuth.renderButton(
+        googleButtonRef.current,
+        (user) => {
+          onLogin({
+            email: user.email,
+            name: user.name,
+            picture: user.picture,
+            authMethod: 'google'
+          });
+        },
+        (error) => {
+          setErrors({ google: error });
+        }
+      );
+    }
+  }, [onLogin]);
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -77,7 +100,8 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
       // Mock successful authentication
       onLogin({
         email: formData.email,
-        name: isLogin ? formData.email.split('@')[0] : formData.name
+        name: isLogin ? formData.email.split('@')[0] : formData.name,
+        authMethod: 'email'
       });
     } catch (error) {
       setErrors({ general: 'Authentication failed. Please try again.' });
@@ -85,6 +109,28 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
       setIsLoading(false);
     }
   }, [formData, isLogin, validateForm, onLogin]);
+
+  const handleGoogleSignIn = useCallback(async () => {
+    setIsGoogleLoading(true);
+    setErrors({});
+    
+    try {
+      // For demo purposes, use the demo sign-in
+      // In production, use: const user = await googleAuth.signIn();
+      const user = await googleAuth.signInDemo();
+      
+      onLogin({
+        email: user.email,
+        name: user.name,
+        picture: user.picture,
+        authMethod: 'google'
+      });
+    } catch (error) {
+      setErrors({ google: 'Google sign-in failed. Please try again.' });
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  }, [onLogin]);
 
   const toggleAuthMode = useCallback(() => {
     setIsLogin(!isLogin);
@@ -144,6 +190,46 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
               >
                 Sign Up
               </button>
+            </div>
+          </div>
+
+          {/* Google Sign-In Button */}
+          <div className="mb-6">
+            <button
+              onClick={handleGoogleSignIn}
+              disabled={isGoogleLoading}
+              className="w-full bg-white hover:bg-gray-50 disabled:bg-gray-100 text-gray-700 font-medium py-3 px-4 rounded-lg flex items-center justify-center space-x-3 transition-all duration-200 shadow-md hover:shadow-lg disabled:cursor-not-allowed border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50"
+            >
+              {isGoogleLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+                  <span>Signing in with Google...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </>
+              )}
+            </button>
+            
+            {errors.google && (
+              <p className="mt-2 text-sm text-red-400">{errors.google}</p>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-800 text-gray-400">Or continue with email</span>
             </div>
           </div>
 
@@ -300,16 +386,36 @@ export default function AuthScreen({ onLogin }: AuthScreenProps) {
           </div>
 
           {/* Demo credentials */}
-          <div className="mt-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-            <div className="flex items-center space-x-2 mb-2">
-              <Sparkles size={16} className="text-blue-400" />
-              <span className="text-sm font-medium text-blue-400">Demo Credentials</span>
+          <div className="mt-4 space-y-3">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <Sparkles size={16} className="text-blue-400" />
+                <span className="text-sm font-medium text-blue-400">Demo Credentials</span>
+              </div>
+              <p className="text-xs text-blue-300">
+                Email: demo@example.com<br />
+                Password: demo123
+              </p>
             </div>
-            <p className="text-xs text-blue-300">
-              Email: demo@example.com<br />
-              Password: demo123
-            </p>
+            
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
+              <div className="flex items-center space-x-2 mb-2">
+                <svg className="w-4 h-4 text-green-400" viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span className="text-sm font-medium text-green-400">Google Demo</span>
+              </div>
+              <p className="text-xs text-green-300">
+                Click "Continue with Google" for demo Google sign-in
+              </p>
+            </div>
           </div>
+
+          {/* Hidden Google button container for SDK */}
+          <div ref={googleButtonRef} className="hidden"></div>
         </div>
       </div>
     </div>

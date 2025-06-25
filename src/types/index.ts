@@ -39,4 +39,6 @@ export interface SwipeAction {
 export interface User {
   email: string;
   name: string;
+  picture?: string;
+  authMethod?: 'email' | 'google';
 }
